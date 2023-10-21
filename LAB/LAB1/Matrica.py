@@ -12,22 +12,22 @@ class Matrica:
     Supports only quadratic matrices.
     """
 
-    def __init__(self, elements: list[list[float]] | None = None):
+    def __init__(self, elements: list[list[float | int]] | None = None):
         """
         Matrix constructor.
         :param elements: elements of the previous matrix
         """
-        self.elements: list[list[float]] = \
+        self.elements: list[list[float | int]] = \
             [] if elements.copy() is None else elements  # in Python, float is double precision
 
-    def get_elements(self) -> list[list[float]]:
+    def get_elements(self) -> list[list[float | int]]:
         """
         Gets matrix elements.
         :return: matrix elements
         """
         return self.elements
 
-    def set_elements(self, elements: list[list[float]]) -> None:
+    def set_elements(self, elements: list[list[float | int]]) -> None:
         """
         Copies all elements into matrix.
         :param elements: to be copied
@@ -35,11 +35,11 @@ class Matrica:
         """
         self.elements = elements.copy()
 
-    def get_element_at(self, position: tuple[int, int]) -> float | None:
+    def get_element_at(self, position: tuple[int, int]) -> float | int | None:
         """
         Gets element from desired position if it exists.
         :param position: from which to get the element
-        :return: *float* if the element at desired position exists | *None* otherwise
+        :return: *float* or *int* if the element at desired position exists | *None* otherwise
         """
         i, j = position
         try:
@@ -48,7 +48,7 @@ class Matrica:
             sys.stderr.write(f"Position out of range\n{error}\n")
             return None
 
-    def set_element_at(self, position: tuple[int, int], element: float) -> None:
+    def set_element_at(self, position: tuple[int, int], element: float | int) -> None:
         """
         Sets element at desired position.
         :param position: at which to put the element
@@ -228,7 +228,7 @@ class Matrica:
     def backward_substitution(self, b: Matrica) -> Self:
         """
         Performs backward substitution algorithm.\n
-        Solves the equation\n
+        Solves the equation Ux=y.\n
         Algorithm complexity: *O(n^2)*
         :return: vector as new *Matrica* object, which is the equation solution
         """
@@ -241,8 +241,28 @@ class Matrica:
 
         return b
 
-    def LU_decomposition(self):
-        ...
+    def LU_decomposition(self) -> Self:
+        """
+        Performs LU-decomposition of the matrix.\n
+        Algorithm complexity: *O(n^3)*
+        :return: *Matrica* which is LU-decomposition of the matrix
+        """
+        N: int = self.get_matrix_dimension()
+
+        try:
+            for i in range(0, N - 1):
+                for j in range(i + 1, N):
+                    pivot: float = self.elements[i][i]
+                    if pivot == 0:
+                        raise ZeroDivisionError
+                    self.elements[j][i] /= pivot
+
+                    for k in range(i + 1, N):
+                        self.elements[j][k] -= self.elements[j][i] * self.elements[i][k]
+        except ZeroDivisionError:
+            sys.stderr.write(f"Pivot element cannot be zero!")
+
+        return self
 
     def LUP_decomposition(self):
         ...
