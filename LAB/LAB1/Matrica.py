@@ -71,14 +71,15 @@ class Matrica:
             with open(file, 'r', encoding='utf-8') as file_matrix:
                 line, i = file_matrix.readline(), 0
                 while line:
-                    line, row = line.strip().split(), []
+                    line, row = line.split(), []
                     for element in line:
                         try:
-                            row.append(float(element))
+                            row.append(float(element.strip()))
                         except ValueError:
                             sys.stderr.write(f"Value cannot be converted to float.\n")
                             return None
                     elements.append(row)
+                    line = file_matrix.readline()
             return Matrica(elements=elements)
 
         except FileNotFoundError:
@@ -122,20 +123,16 @@ class Matrica:
         :param other: matrix to be added
         :return: new *Matrica* object
         """
-        elements: list[list[float]] = []
+        rows, cols = len(self.elements), len(self.elements[0])
         if isinstance(other, float | int):
-            for row in self.elements:
-                col: list[float] = []
-                for element in row:
-                    col.append(element + other)
-                elements.append(col)
+            for i in range(rows):
+                for j in range(cols):
+                    self.elements[i][j] += other
         else:
-            for row1, row2 in zip(self.elements, other.elements):
-                col: list[float] = []
-                for element1, element2 in zip(row1, row2):
-                    col.append(element1 + element2)
-                elements.append(col)
-        return Matrica(elements=elements)
+            for i in range(rows):
+                for j in range(cols):
+                    self.elements[i][j] += other.elements[i][j]
+        return self
 
     def __sub__(self, other) -> Matrica:
         """
@@ -143,20 +140,16 @@ class Matrica:
         :param other: matrix to be subtracted
         :return: new *Matrix* object
         """
-        elements: list[list[float]] = []
+        rows, cols = len(self.elements), len(self.elements[0])
         if isinstance(other, float | int):
-            for row in self.elements:
-                col: list[float] = []
-                for element in row:
-                    col.append(element - other)
-                elements.append(col)
+            for i in range(rows):
+                for j in range(cols):
+                    self.elements[i][j] -= other
         else:
-            for row1, row2 in zip(self.elements, other.elements):
-                col: list[float] = []
-                for element1, element2 in zip(row1, row2):
-                    col.append(element1 - element2)
-                elements.append(col)
-        return Matrica(elements=elements)
+            for i in range(rows):
+                for j in range(cols):
+                    self.elements[i][j] -= other.elements[i][j]
+        return self
 
     def __mul__(self, other) -> Matrica:
         """
@@ -164,20 +157,16 @@ class Matrica:
         :param other: matrix to be multiplied
         :return: new *Matrica* object
         """
-        elements: list[list[float]] = []
+        rows, cols = len(self.elements), len(self.elements[0])
         if isinstance(other, float | int):
-            for row in self.elements:
-                col: list[float] = []
-                for element in row:
-                    col.append(element * other)
-                elements.append(col)
+            for i in range(rows):
+                for j in range(cols):
+                    self.elements[i][j] *= other
         else:
-            for row1, row2 in zip(self.elements, other.elements):
-                col: list[float] = []
-                for element1, element2 in zip(row1, row2):
-                    col.append(element1 * element2)
-                elements.append(col)
-        return Matrica(elements=elements)
+            for i in range(rows):
+                for j in range(cols):
+                    self.elements[i][j] *= other.elements[i][j]
+        return self
 
     def __invert__(self) -> Matrica:
         """
