@@ -9,6 +9,7 @@ import sys
 class Matrica:
     """
     Matrix class with all necessary functionality implemented.
+    Supports only quadratic matrices.
     """
 
     def __init__(self, elements: list[list[float]] | None = None):
@@ -38,7 +39,7 @@ class Matrica:
         """
         Gets element from desired position if it exists.
         :param position: from which to get the element
-        :return: float if the element at desired position exists | None otherwise
+        :return: *float* if the element at desired position exists | *None* otherwise
         """
         i, j = position
         try:
@@ -57,12 +58,19 @@ class Matrica:
         i, j = position
         self.elements[i][j] = element
 
+    def get_matrix_dimension(self) -> int:
+        """
+        Calculates dimension of the matrix.
+        :return: dimension of the matrix as *int*
+        """
+        return len(self.elements)
+
     @staticmethod
     def load_matrix_from_file(file: str) -> Matrica | None:
         """
         Loads matrix from file into memory.
         :param file: from which to load matrix
-        :return: new matrix if it could be created | None otherwise
+        :return: new *Matrica* if it could be created | *None* otherwise
         """
         try:
             elements: list[list[float]] = []
@@ -200,3 +208,47 @@ class Matrica:
                     return False
 
         return True
+
+    def forward_substitution(self, b: Matrica) -> Self:
+        """
+        Performs forward substitution algorithm.\n
+        Solves the equation Ly=Pb.\n
+        Algorithm complexity: *O(n^2)*
+        :param b: vector which multiplies the matrix
+        :return: vector as new *Matrica* object, which is the equation solution
+        """
+        N: int = self.get_matrix_dimension()
+
+        for i in range(0, N - 1):
+            for j in range(i + 1, N):
+                b.elements[0][j] -= self.elements[j][i] * b.elements[0][i]
+
+        return b
+
+    def backward_substitution(self, b: Matrica) -> Self:
+        """
+        Performs backward substitution algorithm.\n
+        Solves the equation\n
+        Algorithm complexity: *O(n^2)*
+        :return: vector as new *Matrica* object, which is the equation solution
+        """
+        N: int = self.get_matrix_dimension()
+
+        for i in range(0, N - 1):
+            b.elements[0][i] /= self.elements[i][i]
+            for j in range(i + 1, N):
+                b.elements[0][j] -= self.elements[j][i] * b.elements[0][i]
+
+        return b
+
+    def LU_decomposition(self):
+        ...
+
+    def LUP_decomposition(self):
+        ...
+
+    def inversion(self):
+        ...
+
+    def determinant(self):
+        ...
