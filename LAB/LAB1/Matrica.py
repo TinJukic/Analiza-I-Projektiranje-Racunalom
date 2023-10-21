@@ -1,16 +1,14 @@
 """
 :author: Tin Jukic
 """
+from __future__ import annotations
+from typing import Self
 import sys
 
 
 class Matrica:
-    pass
-
-
-class Matrica:
     """
-    Matrix class with implemented all necessary functionality.
+    Matrix class with all necessary functionality implemented.
     """
 
     def __init__(self, elements: list[list[float]] | None = None):
@@ -117,7 +115,7 @@ class Matrica:
                 else:
                     print(f"{element}\n")
 
-    def __add__(self, other) -> Matrica:
+    def __add__(self, other) -> Self:
         """
         Adds all elements from one matrix to another.
         :param other: matrix to be added
@@ -134,7 +132,7 @@ class Matrica:
                     self.elements[i][j] += other.elements[i][j]
         return self
 
-    def __sub__(self, other) -> Matrica:
+    def __sub__(self, other) -> Self:
         """
         Subtracts all elements from one matrix to another.
         :param other: matrix to be subtracted
@@ -151,7 +149,7 @@ class Matrica:
                     self.elements[i][j] -= other.elements[i][j]
         return self
 
-    def __mul__(self, other) -> Matrica:
+    def __mul__(self, other) -> Self:
         """
         Multiplies all elements from one matrix to another.
         :param other: matrix to be multiplied
@@ -168,7 +166,7 @@ class Matrica:
                     self.elements[i][j] *= other.elements[i][j]
         return self
 
-    def __invert__(self) -> Matrica:
+    def __invert__(self) -> Self:
         """
         Transposes the matrix.
         :return: new *Matrica* object
