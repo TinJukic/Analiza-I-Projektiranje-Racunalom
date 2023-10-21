@@ -209,6 +209,37 @@ class Matrica:
 
         return True
 
+    def __switch_rows(self, P: Matrica, row1: int, row2: int) -> None:
+        """
+        Helper method for switching rows inside matrix.
+        :type P: current identity matrix
+        :type row1: first row, *int*
+        :type row2: second row, *int*
+        :return: new *Matrica* object, which represents P matrix | *None* if the switch cannot be executed
+        """
+        N: int = self.get_matrix_dimension()
+
+        if row1 >= N or row2 >= N:
+            return None
+
+        tmp: list[float] = self.elements[row1]
+        self.elements[row1] = self.elements[row2]
+        self.elements[row2] = tmp
+
+        tmp: list[int] = P.elements[row1]
+        P.elements[row1] = P.elements[row2]
+        P.elements[row2] = tmp
+
+    @staticmethod
+    def identity_matrix(dimension: int) -> Matrica:
+        """
+        Creates new unit matrix with specified dimensions.
+        :param dimension: of the matrix
+        :return: new *Matrica* object
+        """
+        elements: list[list[float]] = [[1 if i == j else 0 for i in range(dimension)] for j in range(dimension)]
+        return Matrica(elements=elements)
+
     def forward_substitution(self, b: Matrica) -> Self:
         """
         Performs forward substitution algorithm.\n
@@ -241,11 +272,11 @@ class Matrica:
 
         return b
 
-    def LU_decomposition(self) -> Self:
+    def LU_decomposition(self) -> Self | None:
         """
         Performs LU-decomposition of the matrix.\n
         Algorithm complexity: *O(n^3)*
-        :return: *Matrica* which is LU-decomposition of the matrix
+        :return: *Matrica* which is LU-decomposition of the matrix | *None* if error occurred
         """
         N: int = self.get_matrix_dimension()
 
@@ -261,11 +292,42 @@ class Matrica:
                         self.elements[j][k] -= self.elements[j][i] * self.elements[i][k]
         except ZeroDivisionError:
             sys.stderr.write(f"Pivot element cannot be zero!")
+            return None
 
         return self
 
-    def LUP_decomposition(self):
-        ...
+    def LUP_decomposition(self) -> tuple[Self, Self] | None:
+        """
+        Performs LUP-decomposition of the matrix.\n
+        Algorithm complexity: *O(n^3)*
+        :return: *tuple* with two *Matrica* objects: LUP-decomposition of the matrix
+                 and P matrix | *None* if error occurred
+        """
+        try:
+            N: int = self.get_matrix_dimension()
+            P: Matrica = Matrica.identity_matrix(dimension=N)
+
+            for i in range(0, N - 1):
+                # pivot selection: i == row, i == j initially
+                max_element: tuple[float, int] = self.elements[i][i], i
+                for j in range(i, N - 1):
+                    if self.elements[j][i] > max_element[0]:
+                        max_element = self.elements[j][i], j
+                self.__switch_rows(P, i, max_element[1])  # references are sent here, return not required
+                if self.elements[i][i] == 0:
+                    raise ZeroDivisionError
+
+                # pivot selected at index (i, i)
+                for j in range(i + 1, N):
+                    self.elements[j][i] /= self.elements[i][j]
+
+                    for k in range(i + 1, N):
+                        self.elements[j][k] -= self.elements[j][i] * self.elements[i][k]
+        except ZeroDivisionError:
+            sys.stderr.write(f"Pivot element cannot be zero!")
+            return None
+
+        return self, P
 
     def inversion(self):
         ...
