@@ -264,7 +264,6 @@ class Matrica:
 
         return A
 
-
     @staticmethod
     def identity_matrix(dimension: int) -> Matrica:
         """
@@ -393,5 +392,20 @@ class Matrica:
 
         return Matrica.__row_vectors_to_matrix(row_vectors=row_vectors_P)
 
-    def determinant(self):
-        ...
+    def determinant(self) -> int | None:
+        """
+        Calculates the determinant of the matrix.
+        :return: determinant of the matrix | *None* if it cannot be calculated (singular matrix)
+        """
+        LUP, _, k = self.LUP_decomposition()
+        N: int = self.get_matrix_dimension()
+
+        if LUP is None:
+            sys.stderr.write(f"Cannot calculate determinant of a singular matrix!")
+            return None
+
+        upper_determinant: int = 1
+        for i in range(N):
+            upper_determinant *= LUP.elements[i][i]  # product of diagonal elements
+
+        return pow(-1, k) * 1 * upper_determinant
