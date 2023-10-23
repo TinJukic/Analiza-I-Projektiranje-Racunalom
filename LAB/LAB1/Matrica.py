@@ -209,13 +209,15 @@ class Matrica:
 
         return True
 
-    def __switch_rows(self, P: Matrica, row1: int, row2: int) -> None:
+    def __switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:
         """
         Helper method for switching rows inside matrix.
-        :type P: current identity matrix
-        :type row1: first row, *int*
-        :type row2: second row, *int*
-        :return: new *Matrica* object, which represents P matrix | *None* if the switch cannot be executed
+        :param P: current identity matrix
+        :param row1: first row, *int*
+        :param row2: second row, *int*
+        :param num_of_transforms: number of transformations that the matrix has gone through, 1 initially
+        :return: number of transformations that the matrix has gone through | *None* if the transformation cannot be
+                 executed
         """
         N: int = self.get_matrix_dimension()
 
@@ -229,6 +231,39 @@ class Matrica:
         tmp: list[int] = P.elements[row1]
         P.elements[row1] = P.elements[row2]
         P.elements[row2] = tmp
+
+        return num_of_transforms + 1
+
+    def __to_row_vectors(self) -> list[Self]:
+        """
+        Separates the matrix into row-vectors. Matrix must be quadratic.
+        :return: list of *Matrica* elements, which are row-vectors
+        """
+        N: int = self.get_matrix_dimension()
+        row_vectors: list[Matrica] = [Matrica() for _ in range(N)]
+
+        for i in range(N):
+            for j in range(N):
+                row_vectors[j].set_element_at((0, i), self.elements[i][j])
+
+        return row_vectors
+
+    @staticmethod
+    def __row_vectors_to_matrix(row_vectors: list[Matrica]) -> Matrica:
+        """
+        Converts row-vectors into matrix.
+        :param row_vectors: to be converted
+        :return: new *quadratic Matrica* object with row_vectors as its elements
+        """
+        N: int = len(row_vectors)
+        A: Matrica = Matrica()
+
+        for i in range(N):
+            for j in range(N):
+                A.set_element_at((i, j), row_vectors[j].get_element_at((0, i)))
+
+        return A
+
 
     @staticmethod
     def identity_matrix(dimension: int) -> Matrica:
@@ -254,7 +289,7 @@ class Matrica:
             for j in range(i + 1, N):
                 b.elements[0][j] -= self.elements[j][i] * b.elements[0][i]
 
-        return b
+        return b  # ne trebam return?
 
     def backward_substitution(self, b: Matrica) -> Self:
         """
@@ -270,7 +305,7 @@ class Matrica:
             for j in range(i + 1, N):
                 b.elements[0][j] -= self.elements[j][i] * b.elements[0][i]
 
-        return b
+        return b  # ne trebam return?
 
     def LU_decomposition(self) -> Self | None:
         """
@@ -296,16 +331,17 @@ class Matrica:
 
         return self
 
-    def LUP_decomposition(self) -> tuple[Self, Self] | None:
+    def LUP_decomposition(self) -> tuple[Self, Self, int] | None:
         """
         Performs LUP-decomposition of the matrix.\n
         Algorithm complexity: *O(n^3)*
-        :return: *tuple* with two *Matrica* objects: LUP-decomposition of the matrix
-                 and P matrix | *None* if error occurred
+        :return: *tuple* with two *Matrica* objects and an *int*: LUP-decomposition of the matrix
+                 and P matrix, and number of executed transformations | *None* if error occurred
         """
         try:
             N: int = self.get_matrix_dimension()
             P: Matrica = Matrica.identity_matrix(dimension=N)
+            num_of_transforms: int = 0
 
             for i in range(0, N - 1):
                 # pivot selection: i == row, i == j initially
@@ -313,7 +349,8 @@ class Matrica:
                 for j in range(i, N - 1):
                     if self.elements[j][i] > max_element[0]:
                         max_element = self.elements[j][i], j
-                self.__switch_rows(P, i, max_element[1])  # references are sent here, return not required
+                # references are sent here, return not required
+                num_of_transforms = self.__switch_rows(P, i, max_element[1], num_of_transforms)
                 if self.elements[i][i] == 0:
                     raise ZeroDivisionError
 
@@ -327,10 +364,34 @@ class Matrica:
             sys.stderr.write(f"Pivot element cannot be zero!")
             return None
 
-        return self, P
+        return self, P, num_of_transforms
 
-    def inversion(self):
-        ...
+    def inversion(self) -> Self | None:
+        """
+        Makes the inverse of the quadratic matrix using LUP decomposition.\n
+        One LUP-decomposition, n forward and backward substitutions.\n
+        Algorithm complexity: *O(n^3)*
+        :return: matrix inverse as *Matrica* | *None* if the inverse cannot be determined (if matrix is singular)
+        """
+        LUP, P, num_of_transformations = self.LUP_decomposition()
+        N: int = self.get_matrix_dimension()
+
+        if LUP is None:
+            sys.stderr.write(f"Cannot calculate inverse of a singular matrix!")
+            return None
+
+        P: Matrica
+        row_vectors_P: list[Matrica] = P.__to_row_vectors()
+
+        # N forward substitutions
+        for i in range(N):
+            self.forward_substitution(b=row_vectors_P[i])
+
+        # N backward substitutions
+        for i in range(N):
+            self.backward_substitution(b=row_vectors_P[i])
+
+        return Matrica.__row_vectors_to_matrix(row_vectors=row_vectors_P)
 
     def determinant(self):
         ...
