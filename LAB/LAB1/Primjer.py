@@ -1,5 +1,5 @@
 """
-:author: Tin Jukic
+:author: Tin Jukić
 """
 from LAB1.Matrica import Matrica
 
