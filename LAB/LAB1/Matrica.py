@@ -18,7 +18,7 @@ class Matrica:
         :param elements: elements of the previous matrix
         """
         self.__elements: list[list[float | int]] = \
-            [] if elements.copy() is None else elements  # in Python, float is double precision
+            [] if elements is None else elements.copy()  # in Python, float is double precision
 
     def get_elements(self) -> list[list[float | int]]:
         """
@@ -48,15 +48,22 @@ class Matrica:
             sys.stderr.write(f"Position out of range\n{error}\n")
             return None
 
-    def set_element_at(self, position: tuple[int, int], element: float | int) -> None:
+    def set_element_at(self, position: tuple[int, int], element: float | int, N: int = 0) -> None:
         """
         Sets element at desired position.
         :param position: at which to put the element
         :param element: to be put into matrix
+        :param N: number of columns that the new row-vector has
         :return: None
         """
         i, j = position
-        self.__elements[i][j] = element
+        try:
+            self.__elements[i][j] = element
+        except IndexError:
+            # only used for row-vectors
+            if len(self.__elements) == 0:
+                self.__elements = [[0] for _ in range(N)]
+            self.__elements[j][i] = element
 
     def get_matrix_dimension(self) -> int:
         """
@@ -104,9 +111,9 @@ class Matrica:
                 for row in self.__elements:
                     for j, element in enumerate(row):
                         if j < last_element_index:
-                            file_matrix.write(f"{str(element)} ")
+                            file_matrix.write(f"{str(element):10} ")
                         else:
-                            file_matrix.write(f"{str(element)}\n")
+                            file_matrix.write(f"{str(element):10}\n")
         except ValueError:
             sys.stderr.write(f"Value cannot be converted to string.\n")
 
@@ -244,7 +251,7 @@ class Matrica:
 
         return True
 
-    def __switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:
+    def switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:
         """
         Helper method for switching rows inside matrix.
         :param P: current identity matrix
@@ -269,7 +276,7 @@ class Matrica:
 
         return num_of_transforms + 1
 
-    def __to_row_vectors(self) -> list[Self]:
+    def to_row_vectors(self) -> list[Self]:
         """
         Separates the matrix into row-vectors. Matrix must be quadratic.
         :return: list of *Matrica* elements, which are row-vectors
@@ -279,23 +286,23 @@ class Matrica:
 
         for i in range(N):
             for j in range(N):
-                row_vectors[j].set_element_at((0, i), self.__elements[i][j])
+                row_vectors[j].set_element_at((0, i), self.__elements[i][j], N)
 
         return row_vectors
 
     @staticmethod
-    def __row_vectors_to_matrix(row_vectors: list[Matrica]) -> Matrica:
+    def row_vectors_to_matrix(row_vectors: list[Matrica]) -> Matrica:
         """
         Converts row-vectors into matrix.
         :param row_vectors: to be converted
         :return: new *quadratic Matrica* object with row_vectors as its elements
         """
         N: int = len(row_vectors)
-        A: Matrica = Matrica()
+        A: Matrica = Matrica([[0 for _ in range(N)] for _ in range(N)])
 
         for i in range(N):
             for j in range(N):
-                A.set_element_at((i, j), row_vectors[j].get_element_at((0, i)))
+                A.set_element_at((i, j), row_vectors[j].get_element_at((i, 0)))
 
         return A
 
@@ -384,7 +391,7 @@ class Matrica:
                     if self.__elements[j][i] > max_element[0]:
                         max_element = self.__elements[j][i], j
                 # references are sent here, return not required
-                num_of_transforms = self.__switch_rows(P, i, max_element[1], num_of_transforms)
+                num_of_transforms = self.switch_rows(P, i, max_element[1], num_of_transforms)
                 if self.__elements[i][i] == 0:
                     raise ZeroDivisionError
 
@@ -415,7 +422,7 @@ class Matrica:
             return None
 
         P: Matrica
-        row_vectors_P: list[Matrica] = P.__to_row_vectors()
+        row_vectors_P: list[Matrica] = P.to_row_vectors()
 
         # N forward substitutions
         for i in range(N):
@@ -425,7 +432,7 @@ class Matrica:
         for i in range(N):
             self.backward_substitution(b=row_vectors_P[i])
 
-        return Matrica.__row_vectors_to_matrix(row_vectors=row_vectors_P)
+        return Matrica.row_vectors_to_matrix(row_vectors=row_vectors_P)
 
     def determinant(self) -> int | None:
         """
