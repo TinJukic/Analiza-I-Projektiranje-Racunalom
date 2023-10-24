@@ -128,9 +128,15 @@ class Matrica:
         for row in self.__elements:
             for j, element in enumerate(row):
                 if j < last_element_index:
-                    print(f"{element:12.10}", end=" ")
+                    if isinstance(element, float):
+                        print(f"{element:12.10}", end=" ")
+                    else:
+                        print(f"{element:10}", end=" ")
                 else:
-                    print(f"{element:12.10}")
+                    if isinstance(element, float):
+                        print(f"{element:12.10}")
+                    else:
+                        print(f"{element:10}")
         print()
 
     def __add__(self, other) -> Self:
