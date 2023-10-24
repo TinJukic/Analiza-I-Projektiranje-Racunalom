@@ -17,7 +17,7 @@ class Matrica:
         Matrix constructor.
         :param elements: elements of the previous matrix
         """
-        self.elements: list[list[float | int]] = \
+        self.__elements: list[list[float | int]] = \
             [] if elements.copy() is None else elements  # in Python, float is double precision
 
     def get_elements(self) -> list[list[float | int]]:
@@ -25,7 +25,7 @@ class Matrica:
         Gets matrix elements.
         :return: matrix elements
         """
-        return self.elements
+        return self.__elements
 
     def set_elements(self, elements: list[list[float | int]]) -> None:
         """
@@ -33,7 +33,7 @@ class Matrica:
         :param elements: to be copied
         :return: None
         """
-        self.elements = elements.copy()
+        self.__elements = elements.copy()
 
     def get_element_at(self, position: tuple[int, int]) -> float | int | None:
         """
@@ -43,7 +43,7 @@ class Matrica:
         """
         i, j = position
         try:
-            return self.elements[i][j]
+            return self.__elements[i][j]
         except IndexError as error:
             sys.stderr.write(f"Position out of range\n{error}\n")
             return None
@@ -56,14 +56,14 @@ class Matrica:
         :return: None
         """
         i, j = position
-        self.elements[i][j] = element
+        self.__elements[i][j] = element
 
     def get_matrix_dimension(self) -> int:
         """
         Calculates dimension of the matrix.
         :return: dimension of the matrix as *int*
         """
-        return len(self.elements)
+        return len(self.__elements)
 
     @staticmethod
     def load_matrix_from_file(file: str) -> Matrica | None:
@@ -98,10 +98,10 @@ class Matrica:
         :param file: in which to save the matrix
         :return: None
         """
-        last_element_index: int = len(self.elements[0]) - 1
+        last_element_index: int = len(self.__elements[0]) - 1
         try:
             with open(file, 'w', encoding='utf-8') as file_matrix:
-                for row in self.elements:
+                for row in self.__elements:
                     for j, element in enumerate(row):
                         if j < last_element_index:
                             file_matrix.write(f"{str(element)} ")
@@ -115,13 +115,14 @@ class Matrica:
         Prints matrix on screen.
         :return: None
         """
-        last_element_index: int = len(self.elements[0]) - 1
-        for row in self.elements:
+        last_element_index: int = len(self.__elements[0]) - 1
+        for row in self.__elements:
             for j, element in enumerate(row):
                 if j < last_element_index:
-                    print(f"{element} ")
+                    print(f"{element:10}", end=" ")
                 else:
-                    print(f"{element}\n")
+                    print(f"{element:10}")
+        print()
 
     def __add__(self, other) -> Self:
         """
@@ -129,16 +130,26 @@ class Matrica:
         :param other: matrix to be added
         :return: new *Matrica* object
         """
-        rows, cols = len(self.elements), len(self.elements[0])
+        elements: list[list[float]] = []
+        rows, cols = len(self.__elements), len(self.__elements[0])
         if isinstance(other, float | int):
             for i in range(rows):
+                col: list[float] = []
                 for j in range(cols):
-                    self.elements[i][j] += other
+                    col.append(self.__elements[i][j] + other)
+                elements.append(col)
         else:
+            other: Matrica
+            if rows != len(other.__elements) and cols != len(other.__elements[0]):
+                sys.stderr.write(f"Dimensions of two matrices must be identical!")
+                raise Exception
+
             for i in range(rows):
+                col: list[float] = []
                 for j in range(cols):
-                    self.elements[i][j] += other.elements[i][j]
-        return self
+                    col.append(self.__elements[i][j] + other.__elements[i][j])
+                elements.append(col)
+        return Matrica(elements=elements)
 
     def __sub__(self, other) -> Self:
         """
@@ -146,16 +157,26 @@ class Matrica:
         :param other: matrix to be subtracted
         :return: new *Matrix* object
         """
-        rows, cols = len(self.elements), len(self.elements[0])
+        elements: list[list[float]] = []
+        rows, cols = len(self.__elements), len(self.__elements[0])
         if isinstance(other, float | int):
             for i in range(rows):
+                col: list[float] = []
                 for j in range(cols):
-                    self.elements[i][j] -= other
+                    col.append(self.__elements[i][j] - other)
+                elements.append(col)
         else:
+            other: Matrica
+            if rows != len(other.__elements) and cols != len(other.__elements[0]):
+                sys.stderr.write(f"Dimensions of two matrices must be identical!")
+                raise Exception
+
             for i in range(rows):
+                col: list[float] = []
                 for j in range(cols):
-                    self.elements[i][j] -= other.elements[i][j]
-        return self
+                    col.append(self.__elements[i][j] - other.__elements[i][j])
+                elements.append(col)
+        return Matrica(elements=elements)
 
     def __mul__(self, other) -> Self:
         """
@@ -163,16 +184,30 @@ class Matrica:
         :param other: matrix to be multiplied
         :return: new *Matrica* object
         """
-        rows, cols = len(self.elements), len(self.elements[0])
+        elements: list[list[float]] = []
+        rows, cols = len(self.__elements), len(self.__elements[0])
         if isinstance(other, float | int):
             for i in range(rows):
+                col: list[float] = []
                 for j in range(cols):
-                    self.elements[i][j] *= other
+                    col.append(self.__elements[i][j] * other)
+                elements.append(col)
         else:
+            other: Matrica
+            if rows != len(other.__elements[0]):
+                sys.stderr.write(f"Dimensions of two matrices (rows and columns) must be identical "
+                                 f"in order to multiply them!")
+                raise Exception
+
             for i in range(rows):
+                col: list[float] = []
                 for j in range(cols):
-                    self.elements[i][j] *= other.elements[i][j]
-        return self
+                    summing: float = 0.0
+                    for k in range(cols):
+                        summing += self.__elements[i][k] * other.__elements[k][j]
+                    col.append(summing)
+                elements.append(col)
+        return Matrica(elements=elements)
 
     def __invert__(self) -> Self:
         """
@@ -180,11 +215,11 @@ class Matrica:
         :return: new *Matrica* object
         """
         elements: list[list[float]] = []
-        width, height = len(self.elements), len((self.elements[0]))
+        width, height = len(self.__elements), len((self.__elements[0]))
         for j in range(height):
             col: list[float] = []
             for i in range(width):
-                col.append(self.elements[i][j])
+                col.append(self.__elements[i][j])
             elements.append(col)
         return Matrica(elements=elements)
 
@@ -197,14 +232,14 @@ class Matrica:
         if type(self) is not type(other):
             return False
 
-        width1, height1 = len(self.elements), len(self.elements[0])
-        width2, height2 = len(other.elements), len(other.elements[0])
+        width1, height1 = len(self.__elements), len(self.__elements[0])
+        width2, height2 = len(other.__elements), len(other.__elements[0])
         if width1 != width2 or height1 != height2:
             return False
 
         for i in range(width1):
             for j in range(height1):
-                if self.elements[i][j] != other.elements[i][j]:
+                if self.__elements[i][j] != other.__elements[i][j]:
                     return False
 
         return True
@@ -224,13 +259,13 @@ class Matrica:
         if row1 >= N or row2 >= N:
             return None
 
-        tmp: list[float] = self.elements[row1]
-        self.elements[row1] = self.elements[row2]
-        self.elements[row2] = tmp
+        tmp: list[float] = self.__elements[row1]
+        self.__elements[row1] = self.__elements[row2]
+        self.__elements[row2] = tmp
 
-        tmp: list[int] = P.elements[row1]
-        P.elements[row1] = P.elements[row2]
-        P.elements[row2] = tmp
+        tmp: list[int] = P.__elements[row1]
+        P.__elements[row1] = P.__elements[row2]
+        P.__elements[row2] = tmp
 
         return num_of_transforms + 1
 
@@ -244,7 +279,7 @@ class Matrica:
 
         for i in range(N):
             for j in range(N):
-                row_vectors[j].set_element_at((0, i), self.elements[i][j])
+                row_vectors[j].set_element_at((0, i), self.__elements[i][j])
 
         return row_vectors
 
@@ -286,7 +321,7 @@ class Matrica:
 
         for i in range(0, N - 1):
             for j in range(i + 1, N):
-                b.elements[0][j] -= self.elements[j][i] * b.elements[0][i]
+                b.__elements[0][j] -= self.__elements[j][i] * b.__elements[0][i]
 
         return b  # ne trebam return?
 
@@ -300,9 +335,9 @@ class Matrica:
         N: int = self.get_matrix_dimension()
 
         for i in range(0, N - 1):
-            b.elements[0][i] /= self.elements[i][i]
+            b.__elements[0][i] /= self.__elements[i][i]
             for j in range(i + 1, N):
-                b.elements[0][j] -= self.elements[j][i] * b.elements[0][i]
+                b.__elements[0][j] -= self.__elements[j][i] * b.__elements[0][i]
 
         return b  # ne trebam return?
 
@@ -317,13 +352,13 @@ class Matrica:
         try:
             for i in range(0, N - 1):
                 for j in range(i + 1, N):
-                    pivot: float = self.elements[i][i]
+                    pivot: float = self.__elements[i][i]
                     if pivot == 0:
                         raise ZeroDivisionError
-                    self.elements[j][i] /= pivot
+                    self.__elements[j][i] /= pivot
 
                     for k in range(i + 1, N):
-                        self.elements[j][k] -= self.elements[j][i] * self.elements[i][k]
+                        self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
         except ZeroDivisionError:
             sys.stderr.write(f"Pivot element cannot be zero!")
             return None
@@ -344,21 +379,21 @@ class Matrica:
 
             for i in range(0, N - 1):
                 # pivot selection: i == row, i == j initially
-                max_element: tuple[float, int] = self.elements[i][i], i
+                max_element: tuple[float, int] = self.__elements[i][i], i
                 for j in range(i, N - 1):
-                    if self.elements[j][i] > max_element[0]:
-                        max_element = self.elements[j][i], j
+                    if self.__elements[j][i] > max_element[0]:
+                        max_element = self.__elements[j][i], j
                 # references are sent here, return not required
                 num_of_transforms = self.__switch_rows(P, i, max_element[1], num_of_transforms)
-                if self.elements[i][i] == 0:
+                if self.__elements[i][i] == 0:
                     raise ZeroDivisionError
 
                 # pivot selected at index (i, i)
                 for j in range(i + 1, N):
-                    self.elements[j][i] /= self.elements[i][j]
+                    self.__elements[j][i] /= self.__elements[i][j]
 
                     for k in range(i + 1, N):
-                        self.elements[j][k] -= self.elements[j][i] * self.elements[i][k]
+                        self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
         except ZeroDivisionError:
             sys.stderr.write(f"Pivot element cannot be zero!")
             return None
@@ -406,6 +441,6 @@ class Matrica:
 
         upper_determinant: int = 1
         for i in range(N):
-            upper_determinant *= LUP.elements[i][i]  # product of diagonal elements
+            upper_determinant *= LUP.__elements[i][i]  # product of diagonal elements
 
         return pow(-1, k) * 1 * upper_determinant
