@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Self
 import sys
 
+EPSILON: float = 10e-9
+
 
 class Matrica:
     """
@@ -246,7 +248,7 @@ class Matrica:
 
         for i in range(width1):
             for j in range(height1):
-                if self.__elements[i][j] != other.__elements[i][j]:
+                if abs(self.__elements[i][j] - other.__elements[i][j]) > EPSILON:
                     return False
 
         return True
@@ -342,6 +344,9 @@ class Matrica:
         N: int = self.get_matrix_dimension()
 
         for i in range(0, N - 1):
+            if abs(self.__elements[i][i]) < EPSILON:
+                raise ZeroDivisionError
+
             b.__elements[0][i] /= self.__elements[i][i]
             for j in range(i + 1, N):
                 b.__elements[0][j] -= self.__elements[j][i] * b.__elements[0][i]
@@ -358,10 +363,11 @@ class Matrica:
 
         try:
             for i in range(0, N - 1):
+                pivot: float = self.__elements[i][i]
+                if abs(pivot) < EPSILON:
+                    raise ZeroDivisionError
+
                 for j in range(i + 1, N):
-                    pivot: float = self.__elements[i][i]
-                    if pivot == 0:
-                        raise ZeroDivisionError
                     self.__elements[j][i] /= pivot
 
                     for k in range(i + 1, N):
@@ -392,12 +398,12 @@ class Matrica:
                         max_element = self.__elements[j][i], j
                 # references are sent here, return not required
                 num_of_transforms = self.switch_rows(P, i, max_element[1], num_of_transforms)
-                if self.__elements[i][i] == 0:
+                if abs(self.__elements[i][i]) < EPSILON:
                     raise ZeroDivisionError
 
                 # pivot selected at index (i, i)
                 for j in range(i + 1, N):
-                    self.__elements[j][i] /= self.__elements[i][j]
+                    self.__elements[j][i] /= self.__elements[i][i]
 
                     for k in range(i + 1, N):
                         self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
@@ -450,4 +456,5 @@ class Matrica:
         for i in range(N):
             upper_determinant *= LUP.__elements[i][i]  # product of diagonal elements
 
+        # number_of_substitutions, det(L), det(U)
         return pow(-1, k) * 1 * upper_determinant
