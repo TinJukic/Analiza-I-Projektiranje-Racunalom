@@ -65,6 +65,13 @@ def main():
     P = Matrica.row_vectors_to_matrix(row_vectors_P)
     P.print_matrix()
 
+    A = Matrica.load_matrix_from_file('A.txt')
+    print(f"A:")
+    A.print_matrix()
+    print(f"A/=2")
+    A /= 2
+    A.print_matrix()
+
 
 if __name__ == '__main__':
     main()

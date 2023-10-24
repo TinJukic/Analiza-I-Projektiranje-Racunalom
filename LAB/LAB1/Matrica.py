@@ -218,6 +218,33 @@ class Matrica:
                 elements.append(col)
         return Matrica(elements=elements)
 
+    def __truediv__(self, other) -> Self | None:
+        """
+        Divides matrix with scalar value.
+        :param other: scalar value
+        :return: new *Matrica* object | *None* if division cannot be performed
+        """
+        try:
+            elements: list[list[float]] = []
+            rows, cols = len(self.__elements), len(self.__elements[0])
+
+            if abs(other) < EPSILON:
+                raise ZeroDivisionError
+
+            if isinstance(other, int | float):
+                for i in range(rows):
+                    col: list[float] = []
+                    for j in range(cols):
+                        col.append(self.__elements[i][j] / other)
+                    elements.append(col)
+                return Matrica(elements=elements)
+            else:
+                sys.stderr.write(f"You can only divide with int or float value.")
+                return None
+        except ZeroDivisionError:
+            sys.stderr.write(f"You cannot divide with zero!")
+            return None
+
     def __invert__(self) -> Self:
         """
         Transposes the matrix.
