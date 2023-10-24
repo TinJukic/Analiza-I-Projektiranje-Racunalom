@@ -19,8 +19,9 @@ class Matrica:
         Matrix constructor.
         :param elements: elements of the previous matrix
         """
+        # in Python, float is double precision
         self.__elements: list[list[float | int]] = \
-            [] if elements is None else elements.copy()  # in Python, float is double precision
+            [] if elements is None else [[element for element in row] for row in elements]
 
     def get_elements(self) -> list[list[float | int]]:
         """
@@ -98,7 +99,7 @@ class Matrica:
             return Matrica(elements=elements)
 
         except FileNotFoundError:
-            sys.stderr.write(f"Provided file does not exist.")
+            sys.stderr.write(f"Provided file does not exist.\n")
             return None
 
     def save_matrix_to_file(self, file: str) -> None:
@@ -156,7 +157,7 @@ class Matrica:
         else:
             other: Matrica
             if rows != len(other.__elements) and cols != len(other.__elements[0]):
-                sys.stderr.write(f"Dimensions of two matrices must be identical!")
+                sys.stderr.write(f"Dimensions of two matrices must be identical!\n")
                 raise Exception
 
             for i in range(rows):
@@ -183,7 +184,7 @@ class Matrica:
         else:
             other: Matrica
             if rows != len(other.__elements) and cols != len(other.__elements[0]):
-                sys.stderr.write(f"Dimensions of two matrices must be identical!")
+                sys.stderr.write(f"Dimensions of two matrices must be identical!\n")
                 raise Exception
 
             for i in range(rows):
@@ -209,14 +210,14 @@ class Matrica:
                 elements.append(col)
         else:
             other: Matrica
-            if rows != len(other.__elements[0]):
+            if cols != len(other.__elements):
                 sys.stderr.write(f"Dimensions of two matrices (rows and columns) must be identical "
-                                 f"in order to multiply them!")
+                                 f"in order to multiply them!\n")
                 raise Exception
 
             for i in range(rows):
                 col: list[float] = []
-                for j in range(cols):
+                for j in range(len(other.__elements[0])):
                     summing: float = 0.0
                     for k in range(cols):
                         summing += self.__elements[i][k] * other.__elements[k][j]
@@ -245,10 +246,10 @@ class Matrica:
                     elements.append(col)
                 return Matrica(elements=elements)
             else:
-                sys.stderr.write(f"You can only divide with int or float value.")
+                sys.stderr.write(f"You can only divide with int or float value.\n")
                 return None
         except ZeroDivisionError:
-            sys.stderr.write(f"You cannot divide with zero!")
+            sys.stderr.write(f"You cannot divide with zero!\n")
             return None
 
     def __invert__(self) -> Self:
@@ -363,7 +364,7 @@ class Matrica:
 
         for i in range(0, N - 1):
             for j in range(i + 1, N):
-                b.__elements[0][j] -= self.__elements[j][i] * b.__elements[0][i]
+                b.__elements[j][0] -= self.__elements[j][i] * b.__elements[i][0]
 
         return b  # ne trebam return?
 
@@ -376,13 +377,13 @@ class Matrica:
         """
         N: int = self.get_matrix_dimension()
 
-        for i in range(0, N - 1):
+        for i in range(N - 1, 1 - 1, -1):  # lower limit is exclusive
             if abs(self.__elements[i][i]) < EPSILON:
                 raise ZeroDivisionError
 
-            b.__elements[0][i] /= self.__elements[i][i]
-            for j in range(i + 1, N):
-                b.__elements[0][j] -= self.__elements[j][i] * b.__elements[0][i]
+            b.__elements[i][0] /= self.__elements[i][i]
+            for j in range(1, i - 1 - 1, -1):  # lower limit is exclusive
+                b.__elements[j][0] -= self.__elements[j][i] * b.__elements[i][0]
 
         return b  # ne trebam return?
 
@@ -393,23 +394,24 @@ class Matrica:
         :return: *Matrica* which is LU-decomposition of the matrix | *None* if error occurred
         """
         N: int = self.get_matrix_dimension()
+        A: Matrica = Matrica(elements=self.get_elements())
 
         try:
             for i in range(0, N - 1):
-                pivot: float = self.__elements[i][i]
+                pivot: float = A.__elements[i][i]
                 if abs(pivot) < EPSILON:
                     raise ZeroDivisionError
 
                 for j in range(i + 1, N):
-                    self.__elements[j][i] /= pivot
+                    A.__elements[j][i] /= pivot
 
                     for k in range(i + 1, N):
-                        self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
+                        A.__elements[j][k] -= A.__elements[j][i] * A.__elements[i][k]
         except ZeroDivisionError:
-            sys.stderr.write(f"Pivot element cannot be zero!")
+            sys.stderr.write(f"Pivot element cannot be zero!\n")
             return None
 
-        return self
+        return A
 
     def LUP_decomposition(self) -> tuple[Self, Self, int] | None:
         """
@@ -420,31 +422,33 @@ class Matrica:
         """
         try:
             N: int = self.get_matrix_dimension()
+            A: Matrica = Matrica(elements=self.get_elements())
             P: Matrica = Matrica.identity_matrix(dimension=N)
             num_of_transforms: int = 0
 
             for i in range(0, N - 1):
                 # pivot selection: i == row, i == j initially
-                max_element: tuple[float, int] = self.__elements[i][i], i
-                for j in range(i, N - 1):
-                    if self.__elements[j][i] > max_element[0]:
-                        max_element = self.__elements[j][i], j
+                max_element: tuple[float, int] = A.__elements[i][i], i
+                for j in range(i, N):
+                    if abs(A.__elements[j][i]) > abs(max_element[0]):
+                        max_element = A.__elements[j][i], j
                 # references are sent here, return not required
-                num_of_transforms = self.switch_rows(P, i, max_element[1], num_of_transforms)
-                if abs(self.__elements[i][i]) < EPSILON:
+                if i != max_element[1]:
+                    num_of_transforms = A.switch_rows(P, i, max_element[1], num_of_transforms)
+                if abs(A.__elements[i][i]) < EPSILON:
                     raise ZeroDivisionError
 
                 # pivot selected at index (i, i)
                 for j in range(i + 1, N):
-                    self.__elements[j][i] /= self.__elements[i][i]
+                    A.__elements[j][i] /= A.__elements[i][i]
 
                     for k in range(i + 1, N):
-                        self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
+                        A.__elements[j][k] -= A.__elements[j][i] * A.__elements[i][k]
         except ZeroDivisionError:
-            sys.stderr.write(f"Pivot element cannot be zero!")
+            sys.stderr.write(f"Pivot element cannot be zero!\n")
             return None
 
-        return self, P, num_of_transforms
+        return A, P, num_of_transforms
 
     def inversion(self) -> Self | None:
         """
