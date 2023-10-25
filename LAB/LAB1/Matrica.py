@@ -377,12 +377,12 @@ class Matrica:
         """
         N: int = self.get_matrix_dimension()
 
-        for i in range(N - 1, 1 - 1, -1):  # lower limit is exclusive
+        for i in range(N - 1, -1, -1):  # lower limit is exclusive
             if abs(self.__elements[i][i]) < EPSILON:
                 raise ZeroDivisionError
 
             b.__elements[i][0] /= self.__elements[i][i]
-            for j in range(1, i - 1 - 1, -1):  # lower limit is exclusive
+            for j in range(i):  # lower limit is exclusive
                 b.__elements[j][0] -= self.__elements[j][i] * b.__elements[i][0]
 
         return b  # ne trebam return?
