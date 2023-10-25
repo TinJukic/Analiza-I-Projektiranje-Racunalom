@@ -42,13 +42,13 @@ def zad2() -> None:
     b: Matrica = Matrica.load_matrix_from_file("Matrices/zad2b.txt")
     b.print_matrix()
 
-    # print(f"LU decomposition:")
-    # LU = A.LU_decomposition()
-    # if LU is not None:
-    #     LU.print_matrix()
-    # else:
-    #     A.print_matrix()
-    #     print(f"LU decomposition is not possible!", end="\n\n")
+    print(f"LU decomposition:")
+    LU = A.LU_decomposition()
+    if LU is not None:
+        LU.print_matrix()
+    else:
+        A.print_matrix()
+        print(f"LU decomposition is not possible!", end="\n\n")
 
     print(f"LUP decomposition:")
     A: Matrica = Matrica.load_matrix_from_file("Matrices/zad2A.txt")
