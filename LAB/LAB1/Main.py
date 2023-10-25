@@ -276,6 +276,16 @@ def zad7() -> None:
     # A.print_matrix()
 
 
+def zad8() -> None:
+    print(f"ZAD8", end="\n\n")
+
+    A: Matrica = Matrica.load_matrix_from_file("Matrices/zad8A.txt")
+    A.print_matrix()
+
+    inv_A = A.inversion()
+    inv_A.print_matrix()
+
+
 def main() -> None:
     # zad1()
     # zad2()
@@ -283,7 +293,8 @@ def main() -> None:
     # zad4()
     # zad5()
     # zad6()
-    zad7()
+    # zad7()
+    zad8()
 
 
 if __name__ == "__main__":
