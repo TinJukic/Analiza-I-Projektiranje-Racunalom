@@ -266,13 +266,24 @@ def zad6() -> None:
         sys.stderr.write(f"Cannot calculate x using LUP! Pivot element cannot be zero!\n")
 
 
+def zad7() -> None:
+    print(f"ZAD7", end="\n\n")
+
+    A: Matrica = Matrica.load_matrix_from_file("Matrices/zad7A.txt")
+    A.print_matrix()
+
+    A.inversion()
+    # A.print_matrix()
+
+
 def main() -> None:
     # zad1()
     # zad2()
     # zad3()
     # zad4()
     # zad5()
-    zad6()
+    # zad6()
+    zad7()
 
 
 if __name__ == "__main__":

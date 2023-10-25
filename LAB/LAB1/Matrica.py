@@ -374,6 +374,7 @@ class Matrica:
         Solves the equation Ux=y.\n
         Algorithm complexity: *O(n^2)*
         :return: vector as new *Matrica* object, which is the equation solution
+        :raise ZeroDivisionError: if the substitution cannot be calculated
         """
         N: int = self.get_matrix_dimension()
 
@@ -459,7 +460,7 @@ class Matrica:
         N: int = self.get_matrix_dimension()
 
         if LUP is None:
-            sys.stderr.write(f"Cannot calculate inverse of a singular matrix!")
+            sys.stderr.write(f"Cannot calculate inverse of a singular matrix!\n")
             return None
 
         P: Matrica
@@ -469,9 +470,13 @@ class Matrica:
         for i in range(N):
             LUP.forward_substitution(b=row_vectors_P[i])
 
-        # N backward substitutions
-        for i in range(N):
-            LUP.backward_substitution(b=row_vectors_P[i])
+        try:
+            # N backward substitutions
+            for i in range(N):
+                LUP.backward_substitution(b=row_vectors_P[i])
+        except ZeroDivisionError:
+            sys.stderr.write(f"Inverse cannot be calculated!\n")
+            return None
 
         return Matrica.row_vectors_to_matrix(row_vectors=row_vectors_P)
 
