@@ -128,6 +128,17 @@ def main():
     else:
         inv_A.print_matrix()
 
+    print(f"Matrix determinant")
+    A: Matrica = Matrica.load_matrix_from_file("det_A.txt")
+    A.print_matrix()
+
+    det_A = A.determinant()
+
+    if det_A is None:
+        print(f"Determinant cannot be calculated!")
+    else:
+        print(f"det(A) = {det_A}")
+
 
 if __name__ == '__main__':
     main()

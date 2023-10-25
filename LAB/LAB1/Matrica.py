@@ -457,7 +457,7 @@ class Matrica:
         Algorithm complexity: *O(n^3)*
         :return: matrix inverse as *Matrica* | *None* if the inverse cannot be determined (if matrix is singular)
         """
-        LUP, P, num_of_transformations = self.LUP_decomposition()
+        LUP, P, _ = self.LUP_decomposition()
         N: int = self.get_matrix_dimension()
 
         if LUP is None:
