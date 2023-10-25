@@ -299,6 +299,19 @@ def zad9() -> None:
         print(f"Cannot calculate determinant!")
 
 
+def zad10() -> None:
+    print(f"ZAD10", end="\n\n")
+
+    A: Matrica = Matrica.load_matrix_from_file("Matrices/zad10A.txt")
+    A.print_matrix()
+
+    det_A = A.determinant()
+    if det_A is not None:
+        print(f"det(A) = {det_A}")
+    else:
+        print(f"Cannot calculate determinant!")
+
+
 def main() -> None:
     # zad1()
     # zad2()
@@ -308,7 +321,8 @@ def main() -> None:
     # zad6()
     # zad7()
     # zad8()
-    zad9()
+    # zad9()
+    zad10()
 
 
 if __name__ == "__main__":
