@@ -72,7 +72,7 @@ def main():
     A /= 2
     A.print_matrix()
 
-    print(f"matA * x = matb")
+    print(f"LUP => matA * x = matb")
     A: Matrica = Matrica.load_matrix_from_file("matA.txt")
     A.print_matrix()
     b: Matrica = Matrica.load_matrix_from_file("matb.txt")
@@ -96,6 +96,37 @@ def main():
     else:
         A.print_matrix()
         print(f"LUP decomposition is not possible!", end="\n\n")
+
+    print(f"LU => matC * x = matd")
+    C: Matrica = Matrica.load_matrix_from_file("matC.txt")
+    C.print_matrix()
+    d: Matrica = Matrica.load_matrix_from_file("matd.txt")
+    d.print_matrix()
+
+    print(f"LU decomposition:")
+    LU = C.LU_decomposition()
+    if LU is not None:
+        LU.print_matrix()
+
+        y: Matrica = LU.forward_substitution(d)
+        y.print_matrix()
+
+        x: Matrica = LU.backward_substitution(y)
+        x.print_matrix()
+    else:
+        C.print_matrix()
+        print(f"LU decomposition is not possible!", end="\n\n")
+
+    print(f"Matrix inverse")
+    A: Matrica = Matrica.load_matrix_from_file("inv_A.txt")
+    A.print_matrix()
+
+    inv_A = A.inversion()
+
+    if inv_A is None:
+        print(f"Inverse cannot be calculated!")
+    else:
+        inv_A.print_matrix()
 
 
 if __name__ == '__main__':

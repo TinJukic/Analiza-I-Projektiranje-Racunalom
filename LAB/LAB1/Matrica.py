@@ -469,11 +469,11 @@ class Matrica:
 
         # N forward substitutions
         for i in range(N):
-            self.forward_substitution(b=row_vectors_P[i])
+            LUP.forward_substitution(b=row_vectors_P[i])
 
         # N backward substitutions
         for i in range(N):
-            self.backward_substitution(b=row_vectors_P[i])
+            LUP.backward_substitution(b=row_vectors_P[i])
 
         return Matrica.row_vectors_to_matrix(row_vectors=row_vectors_P)
 
