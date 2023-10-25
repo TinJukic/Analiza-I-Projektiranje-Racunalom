@@ -130,12 +130,12 @@ class Matrica:
             for j, element in enumerate(row):
                 if j < last_element_index:
                     if isinstance(element, float):
-                        print(f"{element:18.15}", end=" ")
+                        print(f"{element:20.18}", end=" ")
                     else:
                         print(f"{element:10}", end=" ")
                 else:
                     if isinstance(element, float):
-                        print(f"{element:18.15}")
+                        print(f"{element:20.18}")
                     else:
                         print(f"{element:10}")
         print()
