@@ -72,9 +72,56 @@ def zad2() -> None:
         print(f"LUP decomposition is not possible!", end="\n\n")
 
 
+def zad4() -> None:
+    print(f"ZAD4", end="\n\n")
+
+    A: Matrica = Matrica.load_matrix_from_file("Matrices/zad4A.txt")
+    A.print_matrix()
+
+    b: Matrica = Matrica.load_matrix_from_file("Matrices/zad4b.txt")
+    b.print_matrix()
+
+    print(f"LU decomposition:")
+    LU = A.LU_decomposition()
+    if LU is not None:
+        LU.print_matrix()
+
+        # y: Matrica = LU.forward_substitution(b)
+        # y.print_matrix()
+        #
+        # x: Matrica = LU.backward_substitution(y)
+        # x.print_matrix()
+    else:
+        A.print_matrix()
+        print(f"LU decomposition is not possible!", end="\n\n")
+
+    print(f"LUP decomposition:")
+    A: Matrica = Matrica.load_matrix_from_file("Matrices/zad4A.txt")
+    b: Matrica = Matrica.load_matrix_from_file("Matrices/zad4b.txt")
+    LUP = A.LUP_decomposition()
+    if LUP is not None:
+        A, P, n = LUP
+        A.print_matrix()
+        # P.print_matrix()
+        # print(f"Number of transforms = {n}", end="\n\n")
+        #
+        # perm_b = P * b
+        # perm_b.print_matrix()
+        #
+        # y: Matrica = A.forward_substitution(perm_b)
+        # y.print_matrix()
+        #
+        # x: Matrica = A.backward_substitution(y)
+        # x.print_matrix()
+    else:
+        A.print_matrix()
+        print(f"LUP decomposition is not possible!", end="\n\n")
+
+
 def main() -> None:
     # zad1()
-    zad2()
+    # zad2()
+    zad4()
 
 
 if __name__ == "__main__":
