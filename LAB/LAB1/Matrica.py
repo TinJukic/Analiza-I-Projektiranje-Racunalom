@@ -394,24 +394,23 @@ class Matrica:
         :return: *Matrica* which is LU-decomposition of the matrix | *None* if error occurred
         """
         N: int = self.get_matrix_dimension()
-        A: Matrica = Matrica(elements=self.get_elements())
 
         try:
             for i in range(0, N - 1):
-                pivot: float = A.__elements[i][i]
+                pivot: float = self.__elements[i][i]
                 if abs(pivot) < EPSILON:
                     raise ZeroDivisionError
 
                 for j in range(i + 1, N):
-                    A.__elements[j][i] /= pivot
+                    self.__elements[j][i] /= pivot
 
                     for k in range(i + 1, N):
-                        A.__elements[j][k] -= A.__elements[j][i] * A.__elements[i][k]
+                        self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
         except ZeroDivisionError:
             sys.stderr.write(f"Pivot element cannot be zero!\n")
             return None
 
-        return A
+        return self
 
     def LUP_decomposition(self) -> tuple[Self, Self, int] | None:
         """
@@ -422,33 +421,32 @@ class Matrica:
         """
         try:
             N: int = self.get_matrix_dimension()
-            A: Matrica = Matrica(elements=self.get_elements())
             P: Matrica = Matrica.identity_matrix(dimension=N)
             num_of_transforms: int = 0
 
             for i in range(0, N - 1):
                 # pivot selection: i == row, i == j initially
-                max_element: tuple[float, int] = A.__elements[i][i], i
+                max_element: tuple[float, int] = self.__elements[i][i], i
                 for j in range(i, N):
-                    if abs(A.__elements[j][i]) > abs(max_element[0]):
-                        max_element = A.__elements[j][i], j
+                    if abs(self.__elements[j][i]) > abs(max_element[0]):
+                        max_element = self.__elements[j][i], j
                 # references are sent here, return not required
                 if i != max_element[1]:
-                    num_of_transforms = A.switch_rows(P, i, max_element[1], num_of_transforms)
-                if abs(A.__elements[i][i]) < EPSILON:
+                    num_of_transforms = self.switch_rows(P, i, max_element[1], num_of_transforms)
+                if abs(self.__elements[i][i]) < EPSILON:
                     raise ZeroDivisionError
 
                 # pivot selected at index (i, i)
                 for j in range(i + 1, N):
-                    A.__elements[j][i] /= A.__elements[i][i]
+                    self.__elements[j][i] /= self.__elements[i][i]
 
                     for k in range(i + 1, N):
-                        A.__elements[j][k] -= A.__elements[j][i] * A.__elements[i][k]
+                        self.__elements[j][k] -= self.__elements[j][i] * self.__elements[i][k]
         except ZeroDivisionError:
             sys.stderr.write(f"Pivot element cannot be zero!\n")
             return None
 
-        return A, P, num_of_transforms
+        return self, P, num_of_transforms
 
     def inversion(self) -> Self | None:
         """

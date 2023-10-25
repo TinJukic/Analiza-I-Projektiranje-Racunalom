@@ -47,7 +47,7 @@ def zad2() -> None:
     if LU is not None:
         LU.print_matrix()
     else:
-        A.print_matrix()
+        # A.print_matrix()
         print(f"LU decomposition is not possible!", end="\n\n")
 
     print(f"LUP decomposition:")
@@ -86,13 +86,12 @@ def zad4() -> None:
     if LU is not None:
         LU.print_matrix()
 
-        # y: Matrica = LU.forward_substitution(b)
-        # y.print_matrix()
-        #
-        # x: Matrica = LU.backward_substitution(y)
-        # x.print_matrix()
+        y: Matrica = LU.forward_substitution(b)
+        y.print_matrix()
+
+        x: Matrica = LU.backward_substitution(y)
+        x.print_matrix()
     else:
-        A.print_matrix()
         print(f"LU decomposition is not possible!", end="\n\n")
 
     print(f"LUP decomposition:")
@@ -102,17 +101,17 @@ def zad4() -> None:
     if LUP is not None:
         A, P, n = LUP
         A.print_matrix()
-        # P.print_matrix()
-        # print(f"Number of transforms = {n}", end="\n\n")
-        #
-        # perm_b = P * b
-        # perm_b.print_matrix()
-        #
-        # y: Matrica = A.forward_substitution(perm_b)
-        # y.print_matrix()
-        #
-        # x: Matrica = A.backward_substitution(y)
-        # x.print_matrix()
+        P.print_matrix()
+        print(f"Number of transforms = {n}", end="\n\n")
+
+        perm_b = P * b
+        perm_b.print_matrix()
+
+        y: Matrica = A.forward_substitution(perm_b)
+        y.print_matrix()
+
+        x: Matrica = A.backward_substitution(y)
+        x.print_matrix()
     else:
         A.print_matrix()
         print(f"LUP decomposition is not possible!", end="\n\n")
