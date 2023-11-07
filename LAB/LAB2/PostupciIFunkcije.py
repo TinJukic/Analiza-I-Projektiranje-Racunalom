@@ -62,18 +62,26 @@ class ZlatniRez:
         """
         try:
             with open(file, 'r', encoding='utf-8') as file_golden_section:
-                # ovdje je potrebno jos provjeriti koliko podataka imamo, 2 ili 3
-                # ovisno o tome, mozda se treba pozvati i metoda find_uni_modal_interval
-                a, b, e = file_golden_section.readline().strip().split()
-                return ZlatniRez(a=a, b=b, e=e)
+                lines: list[str] = file_golden_section.readline().strip().split()
+                if len(lines) == 2:
+                    # x0, e
+                    return ZlatniRez(x0=float(lines[0]), h=0.1, e=float(lines[1]))
+                elif len(lines) == 3:
+                    # a, b, e
+                    return ZlatniRez(a=float(lines[0]), b=float(lines[1]), e=float(lines[2]))
+                else:
+                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
+                                     f"'x0' or points 'a' and 'b'.\n")
+                    return None
         except FileNotFoundError:
             sys.stderr.write(f"Provided file does not exist!\n")
             return None
 
-    def golden_section(self, f) -> Matrica:
+    def golden_section(self, f, print_progress: bool = False) -> Matrica:
         """
         Calculates golden section from the interval of this class.
         :param f: function to be used in golden section calculation
+        :param print_progress: tells the program whether the progress should be printed or not
         :return: calculated golden section
         """
         a, b = self.__interval.get_elements()[0]
@@ -81,6 +89,9 @@ class ZlatniRez:
         fc, fd = f(c), f(d)
 
         while (b - a) > self.__e:
+            if print_progress:
+                print(f"a = {a}, b = {b}, c = {c}, d = {d}, fc = {fc}, fd = {fd}")
+
             if fc < fd:
                 b, d = d, c
                 c = b - self.__k * (b - a)
@@ -93,12 +104,13 @@ class ZlatniRez:
         return Matrica([[a, b]])
 
     @staticmethod
-    def find_uni_modal_interval(x0: float, h: float, f) -> Matrica:
+    def find_uni_modal_interval(x0: float, h: float, f, print_progress: bool = False) -> Matrica:
         """
         Finds a uni-modal interval using starting point, shift and interval function.
         :param x0: starting point of a uni-modal interval
         :param h: shift of a uni-modal interval
         :param f: function of a uni-modal interval
+        :param print_progress: tells the program whether the progress should be printed or not
         :return: uni-modal interval as a new *Matrica* object
         """
         l: float = x0 - h
@@ -113,12 +125,18 @@ class ZlatniRez:
 
         if fm > fr:
             while fm > fr:
+                if print_progress:
+                    print(f"l = {l}, r = {r}, m = {m}, fm = {fm}, fl = {fl}, fr = {fr}, step = {step}")
+
                 l, m, fm = m, r, fr
                 step *= 2
                 r = x0 + h * step
                 fr = f(r)
         elif fm > fl:
             while fm > fl:
+                if print_progress:
+                    print(f"l = {l}, r = {r}, m = {m}, fm = {fm}, fl = {fl}, fr = {fr}, step = {step}")
+
                 r, m, fm = f, l, fl
                 step *= 2
                 l = x0 - h * step
