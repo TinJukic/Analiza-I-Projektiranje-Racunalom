@@ -58,7 +58,7 @@ class ZlatniRez:
         """
         Loads data for *ZlatniRez* class from file.
         :param file: file from which the data is loaded
-        :return: new *ZlatniRez* if the file exists | *None* if the file does not exist
+        :return: new *ZlatniRez* if the file exists | *None* if the file does not exist or sent values are incorrect
         """
         try:
             with open(file, 'r', encoding='utf-8') as file_golden_section:
@@ -70,8 +70,8 @@ class ZlatniRez:
                     # a, b, e
                     return ZlatniRez(a=float(lines[0]), b=float(lines[1]), e=float(lines[2]))
                 else:
-                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
-                                     f"'x0' or points 'a' and 'b'.\n")
+                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'x0' and"
+                                     f"'e' or points 'a', 'b' and precision 'e'.\n")
                     return None
         except FileNotFoundError:
             sys.stderr.write(f"Provided file does not exist!\n")
@@ -143,3 +143,40 @@ class ZlatniRez:
                 fl = f(l)
 
         return Matrica([[l, r]])
+
+
+class PretrazivanjePoKoordinatnimOsima:
+    """
+    Coordinate axis search algorithm with all necessary functionality implemented.
+    """
+    def __init__(self, x0: float, n: int, e: float = 10e-6):
+        """
+        *PretrazivanjePoKoordinatnimOsima* constructor.
+        :param x0: starting point
+        :param n: number of dimensions
+        :param e: precision vector
+        """
+        self.__x0: float = x0
+        self.__n: int = n
+        self.__e: Matrica = Matrica([[e for _ in range(n)]])
+
+    @staticmethod
+    def load_from_file(file: str) -> PretrazivanjePoKoordinatnimOsima | None:
+        """
+        Loads data for *PretrazivanjePoKoordinatnimOsima* class from file.
+        :param file: file from which the data is loaded
+        :return: new *PretrazivanjePoKoordinatnimOsima* if the file exists | *None* if the file does not exist
+                 or sent values are incorrect
+        """
+        try:
+            with open(file, 'r', encoding='utf-8') as file_coordinate_axis_search:
+                lines: list[str] = file_coordinate_axis_search.readline().strip().split()
+                if len(lines) == 3:
+                    ...
+                else:
+                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
+                                     f"'x0' or points 'a' and 'b'.\n")
+                    return None
+        except FileNotFoundError:
+            sys.stderr.write(f"Provided file does not exist!\n")
+            return None
