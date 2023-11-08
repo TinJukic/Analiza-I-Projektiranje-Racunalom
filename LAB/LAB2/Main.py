@@ -8,7 +8,8 @@ import Matrica
 def zad1() -> None:
     zlatniRez: ZlatniRez = ZlatniRez(x0=10, f=Funkcije.f1)
     interval: Matrica = zlatniRez.golden_section(f=Funkcije.f1)
-    print((interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2)
+    interval.print_matrix()
+    print(f"min = {(interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2}")
 
 
 def main() -> None:
