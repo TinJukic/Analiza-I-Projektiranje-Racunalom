@@ -13,9 +13,9 @@ def zad1() -> None:
     interval.print_matrix()
     print(f"min = {(interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2}")
 
-    # print(f"\n\nPretraživanje po koordinatnim osima:")
-    # pretrPoKoord: PretrazivanjePoKoordinatnimOsima = PretrazivanjePoKoordinatnimOsima(x0=Matrica(elements=[[10]]), n=1)
-    # pretrPoKoord.coordinate_search(f=Funkcije.f1, print_progress=True).print_matrix()
+    print(f"\n\nPretraživanje po koordinatnim osima:")
+    pretrPoKoord: PretrazivanjePoKoordinatnimOsima = PretrazivanjePoKoordinatnimOsima(x0=Matrica(elements=[[10]]), n=1)
+    pretrPoKoord.coordinate_search(f=Funkcije.f1, print_progress=True).print_matrix()
 
 
 def main() -> None:

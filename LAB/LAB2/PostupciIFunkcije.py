@@ -232,7 +232,7 @@ class PretrazivanjePoKoordinatnimOsima:
                 # minimization in one dimension
                 selected_x: float = x.get_element_at(position=(0, i))
                 selected_e: float = self.__e.get_element_at(position=(0, i))
-                func = lambda l: selected_x + l * selected_e  # ovdje je problem
+                func = lambda l: f(selected_x + l * selected_e)
 
                 interval: Matrica = ZlatniRez(x0=selected_x, f=func).golden_section(f=func)
                 lam: float = (interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2
