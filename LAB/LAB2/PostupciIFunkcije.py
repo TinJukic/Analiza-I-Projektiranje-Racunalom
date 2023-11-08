@@ -27,9 +27,21 @@ class ZlatniRez:
         :param e: precision
         :raise Exception: if neither x0 nor a and b are set
         """
-        if (x0 and a and b) is None:
-            sys.stderr.write(f"You need to pass x0 or a and b to be able to use this class!\n")
-            raise Exception
+        while (x0 and a and b) is None:
+            print(f"None of the arguments were given. Please provide them.")
+            user_selection: str
+            user_selection = input(f"x0=")
+            if user_selection != '\n':
+                x0 = float(user_selection)
+
+            user_selection = input(f"a=")
+            if user_selection != '\n':
+                a = float(user_selection)
+                b = float(input(f"b="))
+
+            user_selection = input(f"e=")
+            if user_selection != '\n':
+                e = float(user_selection)
 
         self.__e: float = e
         self.__interval: Matrica
