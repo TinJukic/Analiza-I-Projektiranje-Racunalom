@@ -105,13 +105,17 @@ class ZlatniRez:
         :param print_progress: tells the program whether the progress should be printed or not
         :return: calculated golden section
         """
+        num_of_iters: int = 0
+
         a, b = self.__interval.get_elements()[0]
         c, d = b - self.__k * (b - a), a + self.__k * (b - a)
         fc, fd = f(c), f(d)
 
         while (b - a) > self.__e:
-            if print_progress:
-                print(f"a = {a}, b = {b}, c = {c}, d = {d}, fc = {fc}, fd = {fd}")
+            num_of_iters += 1
+
+            # if print_progress:
+            #     print(f"a = {a}, b = {b}, c = {c}, d = {d}, fc = {fc}, fd = {fd}")
 
             if fc < fd:
                 b, d = d, c
@@ -121,6 +125,9 @@ class ZlatniRez:
                 a, c = c, d
                 d = a + self.__k * (b - a)
                 fc, fd = fd, f(d)
+
+        if print_progress:
+            print(f"Number of iterations for golden_section is {num_of_iters}.")
 
         return Matrica([[a, b]])
 
@@ -170,14 +177,14 @@ class PretrazivanjePoKoordinatnimOsima:
     """
     Coordinate axis search algorithm with all necessary functionality implemented.
     """
-    def __init__(self, x0: float, n: int, e: float = 10e-6):
+    def __init__(self, x0: Matrica, n: int, e: float = 10e-6):
         """
         *PretrazivanjePoKoordinatnimOsima* constructor.
         :param x0: starting point
         :param n: number of dimensions
         :param e: precision vector
         """
-        self.__x0: float = x0
+        self.__x0: Matrica = x0
         self.__n: int = n
         self.__e: Matrica = Matrica([[e for _ in range(n)]])
 
@@ -194,7 +201,8 @@ class PretrazivanjePoKoordinatnimOsima:
                 lines: list[str] = file_coordinate_axis_search.readline().strip().split()
                 if len(lines) == 3:
                     # x0, n, e
-                    return PretrazivanjePoKoordinatnimOsima(x0=float(lines[0]), n=int(lines[1]), e=float(lines[2]))
+                    # return PretrazivanjePoKoordinatnimOsima(x0=float(lines[0]), n=int(lines[1]), e=float(lines[2]))
+                    ...
                 else:
                     sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
                                      f"'x0' or points 'a' and 'b'.\n")
@@ -203,20 +211,38 @@ class PretrazivanjePoKoordinatnimOsima:
             sys.stderr.write(f"Provided file does not exist!\n")
             return None
 
-    def coordinate_search(self, f, e: float) -> float:
+    def coordinate_search(self, f, e: float = 10e-6, print_progress: bool = False) -> Matrica:
         """
         Runs coordinate axis search algorithm on this class.
         :param f: function that needs to be minimised
         :param e: precision for this search
+        :param print_progress: tells the program whether the progress should be printed or not
         :return: found coordinate
         """
-        x: float = self.__x0
-        xs: float = x
+        num_of_iters: int = 0
 
-        while abs(x - xs) > e:
-            xs = x
-            for i in range(1, self.__n + 1, 1):
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
 
-                ...
+        while True:
+            num_of_iters += 1
+
+            xs: Matrica = Matrica(elements=x.get_elements())
+            for i in range(self.__n):
+                # minimization in one dimension
+                selected_x: float = x.get_element_at(position=(0, i))
+                selected_e: float = self.__e.get_element_at(position=(0, i))
+                func = lambda l: selected_x + l * selected_e  # ovdje je problem
+
+                interval: Matrica = ZlatniRez(x0=selected_x, f=func).golden_section(f=func)
+                lam: float = (interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2
+
+                new_x = x.get_element_at(position=(0, i)) + lam * self.__e.get_element_at(position=(0, i))
+                x.set_element_at(position=(0, i), element=new_x)
+
+            if abs(x - xs) < self.__e:
+                break
+
+        if print_progress:
+            print(f"Number of iterations for coordinate_search is {num_of_iters}.")
 
         return x
