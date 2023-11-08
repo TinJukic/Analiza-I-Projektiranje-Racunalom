@@ -10,6 +10,15 @@ from typing import Self
 import sys
 
 
+class Funkcije:
+    """
+    Implemented all functions for this exercise.
+    """
+    @staticmethod
+    def f1(x: float):
+        return math.pow(x - 3, 2)  # min = 3
+
+
 class ZlatniRez:
     """
     Golden section class with all necessary functionality implemented.
@@ -27,7 +36,7 @@ class ZlatniRez:
         :param e: precision
         :raise Exception: if neither x0 nor a and b are set
         """
-        while (x0 and a and b) is None:
+        while x0 is None and a is None and b is None:
             print(f"None of the arguments were given. Please provide them.")
             user_selection: str
             user_selection = input(f"x0=")
@@ -47,8 +56,8 @@ class ZlatniRez:
         self.__interval: Matrica
         self.__k: float
 
-        if (x0 and h and f) is not None:
-            self.__interval = ZlatniRez.find_uni_modal_interval(x0=x0, h=h, f=f)
+        if x0 is not None:
+            self.__interval = ZlatniRez.find_uni_modal_interval(x0=x0, h=1, f=f)
             self.__k = 0.5 * (math.sqrt(5) - 1)
         else:
             self.__interval = Matrica([[a, b]])
@@ -77,7 +86,7 @@ class ZlatniRez:
                 lines: list[str] = file_golden_section.readline().strip().split()
                 if len(lines) == 2:
                     # x0, e
-                    return ZlatniRez(x0=float(lines[0]), h=0.1, e=float(lines[1]))
+                    return ZlatniRez(x0=float(lines[0]), h=1, e=float(lines[1]))
                 elif len(lines) == 3:
                     # a, b, e
                     return ZlatniRez(a=float(lines[0]), b=float(lines[1]), e=float(lines[2]))
@@ -149,7 +158,7 @@ class ZlatniRez:
                 if print_progress:
                     print(f"l = {l}, r = {r}, m = {m}, fm = {fm}, fl = {fl}, fr = {fr}, step = {step}")
 
-                r, m, fm = f, l, fl
+                r, m, fm = m, l, fl
                 step *= 2
                 l = x0 - h * step
                 fl = f(l)
@@ -184,7 +193,8 @@ class PretrazivanjePoKoordinatnimOsima:
             with open(file, 'r', encoding='utf-8') as file_coordinate_axis_search:
                 lines: list[str] = file_coordinate_axis_search.readline().strip().split()
                 if len(lines) == 3:
-                    ...
+                    # x0, n, e
+                    return PretrazivanjePoKoordinatnimOsima(x0=float(lines[0]), n=int(lines[1]), e=float(lines[2]))
                 else:
                     sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
                                      f"'x0' or points 'a' and 'b'.\n")
@@ -192,3 +202,21 @@ class PretrazivanjePoKoordinatnimOsima:
         except FileNotFoundError:
             sys.stderr.write(f"Provided file does not exist!\n")
             return None
+
+    def coordinate_search(self, f, e: float) -> float:
+        """
+        Runs coordinate axis search algorithm on this class.
+        :param f: function that needs to be minimised
+        :param e: precision for this search
+        :return: found coordinate
+        """
+        x: float = self.__x0
+        xs: float = x
+
+        while abs(x - xs) > e:
+            xs = x
+            for i in range(1, self.__n + 1, 1):
+
+                ...
+
+        return x
