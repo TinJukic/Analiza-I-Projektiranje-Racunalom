@@ -177,6 +177,7 @@ class PretrazivanjePoKoordinatnimOsima:
     """
     Coordinate axis search algorithm with all necessary functionality implemented.
     """
+
     def __init__(self, x0: Matrica, n: int, e: float = 10e-6):
         """
         *PretrazivanjePoKoordinatnimOsima* constructor.
@@ -246,3 +247,60 @@ class PretrazivanjePoKoordinatnimOsima:
             print(f"Number of iterations for coordinate_search is {num_of_iters}.")
 
         return x
+
+
+class NelderMeaduSimplex:
+    """
+    Nelder-Meadu simplex algorithm with all necessary functionality implemented.
+    """
+
+    def __init__(self, x0: Matrica, e: float = 10e-6, delta_x: float = 1.0, alpha: float = 1.0, beta: float = 0.5,
+                 gamma: float = 2.0, sigma: float = 0.5):
+        """
+        *NelderMeaduSimplex* constructor.
+        :param x0: starting point
+        :param e: precision
+        :param delta_x: shift
+        :param alpha: parameter alpha
+        :param beta: parameter beta
+        :param gamma: parameter gamma
+        :param sigma: parameter sigma
+        """
+        self.__x0 = x0
+        self.__e = e
+        self.__delta_x = delta_x
+        self.__alpha = alpha
+        self.__beta = beta
+        self.__gamma = gamma
+        self.__sigma = sigma
+
+    @staticmethod
+    def load_from_file(file: str) -> NelderMeaduSimplex | None:
+        """
+        Loads data for *PretrazivanjePoKoordinatnimOsima* class from file.
+        :param file: file from which the data is loaded
+        :return: new *NelderMeaduSimplex* if the file exists | *None* if the file does not exist
+                 or sent values are incorrect
+        """
+        try:
+            with open(file, 'r', encoding='utf-8') as file_coordinate_axis_search:
+                lines: list[str] = file_coordinate_axis_search.readline().strip().split()
+                if len(lines) > 1:
+                    # x0, n, e
+                    # return NelderMeaduSimplex(x0=float(lines[0]))
+                    ...
+                else:
+                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
+                                     f"'x0' or points 'a' and 'b'.\n")
+                    return None
+        except FileNotFoundError:
+            sys.stderr.write(f"Provided file does not exist!\n")
+            return None
+
+    def calculate_nelder_meadu_simplex(self, f) -> Matrica:
+        # starting points are calculated by moving starting point on each axis by delta_x value
+        xs: list[Matrica] = [
+            Matrica(elements=[
+                [element + 1 if i == j else element for j, element in enumerate(self.__x0.get_elements())]
+            ]) for i in range(self.__x0.get_matrix_dimension())
+        ]  # vector X[i] -> starting simplex
