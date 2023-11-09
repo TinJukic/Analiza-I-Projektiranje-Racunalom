@@ -6,7 +6,6 @@ from __future__ import annotations
 import math
 
 from LAB2.Matrica import Matrica
-from typing import Self
 import sys
 
 
@@ -416,7 +415,6 @@ class NelderMeaduSimplex:
         for i in range(1, n):
             if i != h:
                 xc += xs[i]
-
         return xc / n
 
     @staticmethod
