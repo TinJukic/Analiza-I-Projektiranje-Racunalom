@@ -307,12 +307,7 @@ class NelderMeaduSimplex:
         """
         num_of_iters: int = 0
 
-        # starting points are calculated by moving starting point on each axis by delta_x value
-        xs: list[Matrica] = [
-            Matrica(elements=[
-                [element + 1 if i == j else element for j, element in enumerate(self.__x0.get_elements())]
-            ]) for i in range(self.__x0.get_matrix_dimension())
-        ]  # vector X[i] -> starting simplex
+        xs: list[Matrica] = self.__calculate_starting_points()  # vector X[i] -> starting simplex
 
         while True:
             num_of_iters += 1
@@ -355,6 +350,20 @@ class NelderMeaduSimplex:
             print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
 
         return (xs[0] + xs[len(xs) - 1]) / 2  # (a + b) / 2
+
+    def __calculate_starting_points(self) -> list[Matrica]:
+        """
+        Calculates starting points of Nelder-Meadu simplex algorithm.
+        :return: starting points
+        """
+        # starting points are calculated by moving starting point on each axis by delta_x value
+        xs: list[Matrica] = []
+
+        for x in self.__x0:
+            x: list[float | int]
+            for i in range(len(x)):
+                xs.append(Matrica(elements=[[element + 1 if i == j else element for j, element in enumerate(x)]]))
+        return xs
 
     @staticmethod
     def __argmin(f, xs: list[Matrica], h: int | None = None) -> int:
