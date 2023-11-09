@@ -16,7 +16,7 @@ class Funkcije:
 
     @staticmethod
     def f1(x: float):
-        return math.pow(x - 3, 2)  # min = 3
+        return pow(x - 3, 2)  # min = 3
 
 
 class ZlatniRez:
@@ -311,9 +311,9 @@ class NelderMeaduSimplex:
         while True:
             num_of_iters += 1
 
-            l: int = NelderMeaduSimplex.__argmin(f=f, xs=xs)
-            h: int = NelderMeaduSimplex.__argmax(f=f, xs=xs)
-            s: int = NelderMeaduSimplex.__argmin(f=f, xs=xs, h=h)
+            l: int = self.__argmin(f=f, xs=xs)
+            h: int = self.__argmax(f=f, xs=xs)
+            s: int = self.__argmin(f=f, xs=xs, h=h)
 
             k: float = (1 + math.sqrt(5)) / 2
             xc: Matrica = NelderMeaduSimplex.__find_centroid(xs=xs, h=h)
@@ -338,11 +338,12 @@ class NelderMeaduSimplex:
 
                     xs[h] = xk if f(xk) < f(xs[h]) else NelderMeaduSimplex.__move_points_to_l(xs=xs, l=l)
 
-            result: int = 0
-            for i in range(len(xs)):
-                result = pow(f(xs[i] - xc), 2)
+            result: float = 0.0  # should always have only one value - scalar
+            for xi in xs:
+                element: Matrica = pow(f(xi) - f(xc), 2)
+                result += element.get_elements()[0][0]
             result /= 2
-            if result < self.__e:
+            if math.sqrt(result) < self.__e:
                 break
 
         if print_progress:
@@ -364,8 +365,7 @@ class NelderMeaduSimplex:
                 xs.append(Matrica(elements=[[element + 1 if i == j else element for j, element in enumerate(x)]]))
         return xs
 
-    @staticmethod
-    def __argmin(f, xs: list[Matrica], h: int | None = None) -> int:
+    def __argmin(self, f, xs: list[Matrica], h: int | None = None) -> int:
         """
         Finds the argmin of the function.
         :param f: desired function
@@ -373,7 +373,8 @@ class NelderMeaduSimplex:
         :param h: found earlier, *None* if h is being found
         :return: argmin
         """
-        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+        # x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+        x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
 
         argmin: int = 0
         for i in range(len(x_function_call) - 1):
@@ -384,15 +385,15 @@ class NelderMeaduSimplex:
                         argmin = j
         return argmin
 
-    @staticmethod
-    def __argmax(f, xs: list[Matrica]) -> int:
+    def __argmax(self, f, xs: list[Matrica]) -> int:
         """
         Finds the argmax of the function.
         :param f: desired function
         :param xs: values for which the max is calculated
         :return: argmax
         """
-        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+        # x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+        x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
 
         argmax: int = 0
         for i in range(len(x_function_call) - 1):
