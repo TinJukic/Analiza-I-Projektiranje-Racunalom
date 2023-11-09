@@ -334,7 +334,8 @@ class Matrica:
         power_matrix: Matrica = Matrica(elements=self.__elements)
         for _ in range(power - 1):
             power_matrix *= self
-        return self.set_elements(elements=power_matrix.get_elements())
+        self.set_elements(elements=power_matrix.get_elements())
+        return self
 
     def switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:
         """
