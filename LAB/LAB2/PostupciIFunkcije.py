@@ -14,6 +14,7 @@ class Funkcije:
     """
     Implemented all functions for this exercise.
     """
+
     @staticmethod
     def f1(x: float):
         return math.pow(x - 3, 2)  # min = 3
@@ -120,7 +121,7 @@ class ZlatniRez:
             if fc < fd:
                 b, d = d, c
                 c = b - self.__k * (b - a)
-                fd, fc = fc,  f(c)
+                fd, fc = fc, f(c)
             else:
                 a, c = c, d
                 d = a + self.__k * (b - a)
@@ -297,10 +298,160 @@ class NelderMeaduSimplex:
             sys.stderr.write(f"Provided file does not exist!\n")
             return None
 
-    def calculate_nelder_meadu_simplex(self, f) -> Matrica:
+    def calculate_nelder_meadu_simplex(self, f, print_progress: bool = False) -> Matrica:
+        """
+        Runs Nelder-Meadu algorithm on this class.
+        :param f: function that needs to be minimised
+        :param print_progress:
+        :return: tells the program whether the progress should be printed or not
+        """
+        num_of_iters: int = 0
+
         # starting points are calculated by moving starting point on each axis by delta_x value
         xs: list[Matrica] = [
             Matrica(elements=[
                 [element + 1 if i == j else element for j, element in enumerate(self.__x0.get_elements())]
             ]) for i in range(self.__x0.get_matrix_dimension())
         ]  # vector X[i] -> starting simplex
+
+        while True:
+            num_of_iters += 1
+
+            l: int = NelderMeaduSimplex.__argmin(f=f, xs=xs)
+            h: int = NelderMeaduSimplex.__argmax(f=f, xs=xs)
+            s: int = NelderMeaduSimplex.__argmin(f=f, xs=xs, h=h)
+
+            k: float = (1 + math.sqrt(5)) / 2
+            xc: Matrica = NelderMeaduSimplex.__find_centroid(xs=xs, h=h)
+            xr: Matrica = NelderMeaduSimplex.__reflexion(alpha=self.__alpha, xc=xc, xh=xs[h])
+
+            if f(xr) < f(xs[l]):
+                xe: Matrica = NelderMeaduSimplex.__expansion(gamma=self.__gamma, xc=xc, xr=xr)
+                xs[h] = xe if f(xe) < f(xs[l]) else xr
+            else:
+                all_xr_smaller: bool = True
+                for i in range(len(xs)):
+                    if i != h:
+                        if f(xr) >= f(xs[i]):
+                            all_xr_smaller = False
+                            break
+
+                if all_xr_smaller:
+                    xs[h] = xr
+                else:
+                    xk: Matrica = NelderMeaduSimplex.__contraction(beta=self.__beta, xc=xc, xr=xr) if f(xr) < f(xs[h]) \
+                        else NelderMeaduSimplex.__contraction(beta=self.__beta, xc=xc, xh=xs[h])
+
+                    xs[h] = xk if f(xk) < f(xs[h]) else NelderMeaduSimplex.__move_points_to_l(xs=xs, l=l)
+
+            result: int = 0
+            for i in range(len(xs)):
+                result = pow(f(xs[i] - xc), 2)
+            result /= 2
+            if result < self.__e:
+                break
+
+        if print_progress:
+            print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
+
+        return (xs[0] + xs[len(xs) - 1]) / 2  # (a + b) / 2
+
+    @staticmethod
+    def __argmin(f, xs: list[Matrica], h: int | None = None) -> int:
+        """
+        Finds the argmin of the function.
+        :param f: desired function
+        :param xs: values for which the min is calculated
+        :param h: found earlier, *None* if h is being found
+        :return: argmin
+        """
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+
+        argmin: int = 0
+        for i in range(len(x_function_call) - 1):
+            if h is not None and i != h:
+                argmin = i
+                for j in range(i + 1, len(x_function_call)):
+                    if h is not None and j != h and x_function_call[j] < x_function_call[i]:
+                        argmin = j
+        return argmin
+
+    @staticmethod
+    def __argmax(f, xs: list[Matrica]) -> int:
+        """
+        Finds the argmax of the function.
+        :param f: desired function
+        :param xs: values for which the max is calculated
+        :return: argmax
+        """
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+
+        argmax: int = 0
+        for i in range(len(x_function_call) - 1):
+            for j in range(i + 1, len(x_function_call)):
+                if x_function_call[j] > x_function_call[i]:
+                    argmax = j
+        return argmax
+
+    @staticmethod
+    def __find_centroid(xs: list[Matrica], h: int) -> Matrica:
+        """
+        Finds the centroid.
+        :param xs: list of vectors
+        :param h: argmax value
+        :return: found centroid
+        """
+        xc: Matrica = xs[0]
+        n: int = len(xs)
+
+        for i in range(1, n):
+            if i != h:
+                xc += xs[i]
+
+        return xc / n
+
+    @staticmethod
+    def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:
+        """
+        Performs reflexion.
+        :param alpha: coefficient alpha
+        :param xc: centroid
+        :param xh: max value for the argument h (argmax)
+        :return: reflexion point
+        """
+        return xc * (1 + alpha) - xh * alpha
+
+    @staticmethod
+    def __expansion(gamma: float, xc: Matrica, xr: Matrica) -> Matrica:
+        """
+        Performs expansion.
+        :param gamma: coefficient gamma
+        :param xc: centroid
+        :param xr: reflexion point
+        :return: expansion point
+        """
+        return xc * (1 - gamma) - xr * gamma
+
+    @staticmethod
+    def __contraction(beta: float, xc: Matrica, xr: Matrica = None, xh: Matrica = None) -> Matrica:
+        """
+        Performs contraction.
+        :param beta: coefficient beta
+        :param xc: centroid
+        :param xr: reflexion point
+        :param xh: max value for the argument h (argmax)
+        :return: contraction point
+        """
+        return xc * (1 - beta) - xr * beta if xr is not None else xc * (1 - beta) - xh * beta
+
+    @staticmethod
+    def __move_points_to_l(xs: list[Matrica], l: int) -> None:
+        """
+        Moves all point to l.
+        :param xs: all points in this iteration
+        :param l: argmin value
+        :return: None
+        """
+        for i in range(len(xs)):
+            if i != l:
+                xs[i] = (xs[i] + xs[l]) / 2  # (pointer, no need for return)
