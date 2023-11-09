@@ -17,6 +17,10 @@ def main() -> None:
     for element in c:
         print(element)
 
+    d: Matrica = Matrica(elements=[[4, -5], [4, -5]])
+    pow(d, 2)
+    d.print_matrix()
+
 
 if __name__ == "__main__":
     main()

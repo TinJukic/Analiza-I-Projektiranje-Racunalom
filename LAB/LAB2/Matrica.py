@@ -324,6 +324,18 @@ class Matrica:
         """
         return iter(self.__elements)
 
+    def __pow__(self, power, modulo=None) -> Self:
+        """
+        Calculates desired matrix to the desired power. Matrices must be quadratic and of same dimensions.
+        :param power: desired power
+        :param modulo: desired modulo (not implemented)
+        :return: calculated matrix power
+        """
+        power_matrix: Matrica = Matrica(elements=self.__elements)
+        for _ in range(power - 1):
+            power_matrix *= self
+        return self.set_elements(elements=power_matrix.get_elements())
+
     def switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:
         """
         Helper method for switching rows inside matrix.
