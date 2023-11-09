@@ -14,6 +14,9 @@ def main() -> None:
     abs_c = abs(c)  # works as expected
     abs_c.print_matrix()
 
+    for element in c:
+        print(element)
+
 
 if __name__ == "__main__":
     main()

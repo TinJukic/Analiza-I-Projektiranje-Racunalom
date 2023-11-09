@@ -2,8 +2,9 @@
 :author: Tin Jukić
 """
 from __future__ import annotations
-from typing import Self
+
 import sys
+from typing import Self, Iterator
 
 EPSILON: float = 10e-9
 
@@ -287,7 +288,7 @@ class Matrica:
 
         return True
 
-    def __lt__(self, other: Matrica):
+    def __lt__(self, other: Matrica) -> bool:
         """
         Checks if all values from the first matrix are lesser than all values from the second matrix.
         :param other: matrix to be compared to
@@ -309,12 +310,19 @@ class Matrica:
 
         return True
 
-    def __abs__(self):
+    def __abs__(self) -> Self:
         """
         Calculates abs value of the matrix.
         :return: calculated abs value as new *Matrica* object
         """
         return Matrica(elements=[[abs(element) for element in elements] for elements in self.__elements])
+
+    def __iter__(self) -> Iterator[list[float | int]]:
+        """
+        Makes the matrix class iterable.
+        :return: elements of the matrix as iterable object
+        """
+        return iter(self.__elements)
 
     def switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:
         """
