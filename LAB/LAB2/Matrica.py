@@ -3,6 +3,7 @@
 """
 from __future__ import annotations
 
+import math
 import sys
 from typing import Self, Iterator
 
@@ -335,6 +336,14 @@ class Matrica:
         for _ in range(power - 1):
             power_matrix *= self
         self.set_elements(elements=power_matrix.get_elements())
+        return self
+
+    def sqrt(self) -> Matrica:
+        """
+        Finds square root of the vector (does not work for matrices).
+        :return: square root of the matrix
+        """
+        self.set_elements(elements=[[math.sqrt(element) for element in self.get_elements()[0]]])
         return self
 
     def switch_rows(self, P: Matrica, row1: int, row2: int, num_of_transforms: int = 0) -> int | None:

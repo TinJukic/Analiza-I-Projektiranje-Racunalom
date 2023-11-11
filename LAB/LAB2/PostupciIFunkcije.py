@@ -15,8 +15,21 @@ class Funkcije:
     """
 
     @staticmethod
+    def uni_modal_test(x: float):
+        return pow(x, 2) - 2
+
+    @staticmethod
+    def golden_section_test(x: float):
+        return pow(x - 4, 2)
+
+    @staticmethod
     def f1(x: float):
         return pow(x - 3, 2)  # min = 3
+
+    @staticmethod
+    def f2(x: Matrica):
+        # min = (4, 2), f_min = 0
+        return pow((x.get_element_at(position=(0, 0)) - 4), 2) - 4 * pow((x.get_element_at(position=(0, 1)) - 2), 2)
 
 
 class ZlatniRez:
@@ -228,11 +241,15 @@ class PretrazivanjePoKoordinatnimOsima:
             num_of_iters += 1
 
             xs: Matrica = Matrica(elements=x.get_elements())
+
+            # interval: Matrica = ZlatniRez(x0=x, f=func).golden_section(f=func)
+
             for i in range(self.__n):
                 # minimization in one dimension
+                func = lambda l: f(x + self.__e * l)
                 selected_x: float = x.get_element_at(position=(0, i))
                 selected_e: float = self.__e.get_element_at(position=(0, i))
-                func = lambda l: f(selected_x + l * selected_e)
+                # func = lambda l: f(selected_x + l * selected_e)
 
                 interval: Matrica = ZlatniRez(x0=selected_x, f=func).golden_section(f=func)
                 lam: float = (interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2
@@ -266,13 +283,13 @@ class NelderMeaduSimplex:
         :param gamma: parameter gamma
         :param sigma: parameter sigma
         """
-        self.__x0 = x0
-        self.__e = e
-        self.__delta_x = delta_x
-        self.__alpha = alpha
-        self.__beta = beta
-        self.__gamma = gamma
-        self.__sigma = sigma
+        self.__x0: Matrica = x0
+        self.__e: float = e
+        self.__delta_x: float = delta_x
+        self.__alpha: float = alpha
+        self.__beta: float = beta
+        self.__gamma: float = gamma
+        self.__sigma: float = sigma
 
     @staticmethod
     def load_from_file(file: str) -> NelderMeaduSimplex | None:
@@ -313,7 +330,7 @@ class NelderMeaduSimplex:
 
             l: int = self.__argmin(f=f, xs=xs)
             h: int = self.__argmax(f=f, xs=xs)
-            s: int = self.__argmin(f=f, xs=xs, h=h)
+            # s: int = self.__argmin(f=f, xs=xs, h=h)
 
             k: float = (1 + math.sqrt(5)) / 2
             xc: Matrica = NelderMeaduSimplex.__find_centroid(xs=xs, h=h)
@@ -333,17 +350,20 @@ class NelderMeaduSimplex:
                 if all_xr_smaller:
                     xs[h] = xr
                 else:
-                    xk: Matrica = NelderMeaduSimplex.__contraction(beta=self.__beta, xc=xc, xr=xr) if f(xr) < f(xs[h]) \
-                        else NelderMeaduSimplex.__contraction(beta=self.__beta, xc=xc, xh=xs[h])
+                    xk: Matrica = NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xr=xr) if f(xr) < f(xs[h]) \
+                        else NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xh=xs[h])
 
-                    xs[h] = xk if f(xk) < f(xs[h]) else NelderMeaduSimplex.__move_points_to_l(xs=xs, l=l)
+                    if f(xk) < f(xs[h]):
+                        xs[h] = xk
+                    else:
+                        NelderMeaduSimplex.__move_points_to_l(xs=xs, l=l)
 
             result: float = 0.0  # should always have only one value - scalar
             for xi in xs:
-                element: Matrica = pow(f(xi) - f(xc), 2)
-                result += element.get_elements()[0][0]
-            result /= 2
-            if math.sqrt(result) < self.__e:
+                element: float = pow(f(xi) - f(xc), 2)
+                result += element
+            result = math.sqrt(result / 2)
+            if result < self.__e:
                 break
 
         if print_progress:
@@ -365,24 +385,22 @@ class NelderMeaduSimplex:
                 xs.append(Matrica(elements=[[element + 1 if i == j else element for j, element in enumerate(x)]]))
         return xs
 
-    def __argmin(self, f, xs: list[Matrica], h: int | None = None) -> int:
+    def __argmin(self, f, xs: list[Matrica]) -> int:
         """
         Finds the argmin of the function.
         :param f: desired function
         :param xs: values for which the min is calculated
-        :param h: found earlier, *None* if h is being found
         :return: argmin
         """
-        # x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
-        x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+        # x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
 
         argmin: int = 0
         for i in range(len(x_function_call) - 1):
-            if h is not None and i != h:
-                argmin = i
-                for j in range(i + 1, len(x_function_call)):
-                    if h is not None and j != h and x_function_call[j] < x_function_call[i]:
-                        argmin = j
+            # argmin = i
+            for j in range(i + 1, len(x_function_call)):
+                if x_function_call[j] < x_function_call[i]:
+                    argmin = j
         return argmin
 
     def __argmax(self, f, xs: list[Matrica]) -> int:
@@ -392,11 +410,12 @@ class NelderMeaduSimplex:
         :param xs: values for which the max is calculated
         :return: argmax
         """
-        # x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
-        x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+        # x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
 
         argmax: int = 0
         for i in range(len(x_function_call) - 1):
+            # argmax = i
             for j in range(i + 1, len(x_function_call)):
                 if x_function_call[j] > x_function_call[i]:
                     argmax = j
@@ -441,7 +460,7 @@ class NelderMeaduSimplex:
         return xc * (1 - gamma) - xr * gamma
 
     @staticmethod
-    def __contraction(beta: float, xc: Matrica, xr: Matrica = None, xh: Matrica = None) -> Matrica:
+    def __contraction(alpha: float, beta: float, xc: Matrica, xr: Matrica = None, xh: Matrica = None) -> Matrica:
         """
         Performs contraction.
         :param beta: coefficient beta
@@ -450,7 +469,7 @@ class NelderMeaduSimplex:
         :param xh: max value for the argument h (argmax)
         :return: contraction point
         """
-        return xc * (1 - beta) - xr * beta if xr is not None else xc * (1 - beta) - xh * beta
+        return xc * (1 - beta) - xr * alpha if xr is not None else xc * (1 - beta) - xh * alpha
 
     @staticmethod
     def __move_points_to_l(xs: list[Matrica], l: int) -> None:
