@@ -507,6 +507,8 @@ class HookeJeeves:
         xb: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while self.__dx > self.__e:
+            num_of_iters += 1
+
             xn: Matrica = self.__search_procedure(xp=xp, f=f)
 
             if f(xn) < f(xb):
