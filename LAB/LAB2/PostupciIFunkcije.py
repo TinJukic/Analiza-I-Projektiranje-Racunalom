@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import math
 
-from LAB2.Matrica import Matrica
+from Matrica import Matrica
 import sys
 
 
@@ -318,8 +318,8 @@ class NelderMeaduSimplex:
         """
         Runs Nelder-Meadu algorithm on this class.
         :param f: function that needs to be minimised
-        :param print_progress:
-        :return: tells the program whether the progress should be printed or not
+        :param print_progress: tells the program whether the progress should be printed or not
+        :return: found min of the function
         """
         num_of_iters: int = 0
 
@@ -333,7 +333,7 @@ class NelderMeaduSimplex:
             # s: int = self.__argmin(f=f, xs=xs, h=h)
 
             k: float = (1 + math.sqrt(5)) / 2
-            xc: Matrica = NelderMeaduSimplex.__find_centroid(xs=xs, h=h)
+            xc: Matrica = NelderMeaduSimplex.__find_centroid(x0=self.__x0, xs=xs, h=h)
             xr: Matrica = NelderMeaduSimplex.__reflexion(alpha=self.__alpha, xc=xc, xh=xs[h])
 
             if f(xr) < f(xs[l]):
@@ -350,7 +350,8 @@ class NelderMeaduSimplex:
                 if all_xr_smaller:
                     xs[h] = xr
                 else:
-                    xk: Matrica = NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xr=xr) if f(xr) < f(xs[h]) \
+                    xk: Matrica = NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xr=xr) \
+                        if f(xr) < f(xs[h]) \
                         else NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xh=xs[h])
 
                     if f(xk) < f(xs[h]):
@@ -358,18 +359,16 @@ class NelderMeaduSimplex:
                     else:
                         NelderMeaduSimplex.__move_points_to_l(xs=xs, l=l)
 
-            result: float = 0.0  # should always have only one value - scalar
+            result: float = 0.0
             for xi in xs:
-                element: float = pow(f(xi) - f(xc), 2)
-                result += element
-            result = math.sqrt(result / 2)
-            if result < self.__e:
-                break
+                element: Matrica = pow(f(xi) - f(xc), 2)  # should always have only one value - scalar
+                result += element.get_element_at(position=(0, 0))
+            result = math.sqrt(result / len(self.__x0.get_elements()[0]))
 
-        if print_progress:
-            print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
-
-        return (xs[0] + xs[len(xs) - 1]) / 2  # (a + b) / 2
+            if result <= self.__e:
+                if print_progress:
+                    print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
+                return (xs[l] + xs[h]) / 2  # (a + b) / 2
 
     def __calculate_starting_points(self) -> list[Matrica]:
         """
@@ -377,7 +376,7 @@ class NelderMeaduSimplex:
         :return: starting points
         """
         # starting points are calculated by moving starting point on each axis by delta_x value
-        xs: list[Matrica] = []
+        xs: list[Matrica] = [self.__x0]
 
         for x in self.__x0:
             x: list[float | int]
@@ -397,7 +396,6 @@ class NelderMeaduSimplex:
 
         argmin: int = 0
         for i in range(len(x_function_call) - 1):
-            # argmin = i
             for j in range(i + 1, len(x_function_call)):
                 if x_function_call[j] < x_function_call[i]:
                     argmin = j
@@ -415,27 +413,27 @@ class NelderMeaduSimplex:
 
         argmax: int = 0
         for i in range(len(x_function_call) - 1):
-            # argmax = i
             for j in range(i + 1, len(x_function_call)):
                 if x_function_call[j] > x_function_call[i]:
                     argmax = j
         return argmax
 
     @staticmethod
-    def __find_centroid(xs: list[Matrica], h: int) -> Matrica:
+    def __find_centroid(x0: Matrica, xs: list[Matrica], h: int) -> Matrica:
         """
         Finds the centroid.
+        :param x0: starting point
         :param xs: list of vectors
         :param h: argmax value
         :return: found centroid
         """
-        xc: Matrica = xs[0]
+        xc: Matrica = Matrica(elements=[[0 for _ in range(len(xs[0].get_elements()[0]))]])
         n: int = len(xs)
 
-        for i in range(1, n):
+        for i in range(n):
             if i != h:
                 xc += xs[i]
-        return xc / n
+        return xc / len(x0.get_elements()[0])
 
     @staticmethod
     def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:

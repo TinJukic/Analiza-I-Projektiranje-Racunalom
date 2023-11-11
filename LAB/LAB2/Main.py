@@ -32,9 +32,9 @@ def zad1() -> None:
     except OverflowError:
         sys.stderr.write(f"Cannot solve this problem using coordinate axis search.\n")
 
-    # print(f"\n\nNelder-Meadu simplex:")
-    # nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[0.1, 0.3]]))
-    # nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f1, print_progress=True).print_matrix()
+    print(f"\n\nNelder-Meadu simplex:")
+    nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[10]]))
+    nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f1, print_progress=True).print_matrix()
 
 
 def main() -> None:

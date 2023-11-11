@@ -311,6 +311,50 @@ class Matrica:
 
         return True
 
+    def __gt__(self, other: Matrica) -> bool:
+        """
+        Checks if all values from the first matrix are greater than all values from the second matrix.
+        :param other: matrix to be compared to
+        :return: *True* if all elements from one matrix are greater than all elements from the other matrix,
+                 *False* otherwise
+        """
+        if type(self) is not type(other):
+            return False
+
+        width1, height1 = len(self.__elements), len(self.__elements[0])
+        width2, height2 = len(other.__elements), len(other.__elements[0])
+        if width1 != width2 or height1 != height2:
+            return False
+
+        for i in range(width1):
+            for j in range(height1):
+                if self.__elements[i][j] <= other.__elements[i][j]:
+                    return False
+
+        return True
+
+    def __ge__(self, other: Matrica) -> bool:
+        """
+        Checks if all values from the first matrix are greater than or equal to all values from the second matrix.
+        :param other: matrix to be compared to
+        :return: *True* if all elements from one matrix are greater than or equal to all elements from the other matrix,
+                 *False* otherwise
+        """
+        if type(self) is not type(other):
+            return False
+
+        width1, height1 = len(self.__elements), len(self.__elements[0])
+        width2, height2 = len(other.__elements), len(other.__elements[0])
+        if width1 != width2 or height1 != height2:
+            return False
+
+        for i in range(width1):
+            for j in range(height1):
+                if self.__elements[i][j] < other.__elements[i][j]:
+                    return False
+
+        return True
+
     def __abs__(self) -> Self:
         """
         Calculates abs value of the matrix.
