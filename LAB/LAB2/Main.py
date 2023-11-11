@@ -1,7 +1,7 @@
 """
 :author: Tin Jukić
 """
-from PostupciIFunkcije import Funkcije, ZlatniRez, PretrazivanjePoKoordinatnimOsima, NelderMeaduSimplex
+from PostupciIFunkcije import Funkcije, ZlatniRez, PretrazivanjePoKoordinatnimOsima, NelderMeaduSimplex, HookeJeeves
 from Matrica import Matrica
 import sys
 
@@ -35,6 +35,10 @@ def zad1() -> None:
     print(f"\n\nNelder-Meadu simplex:")
     nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[10]]))
     nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f1, print_progress=True).print_matrix()
+
+    print(f"\n\nHooke-Jeeves simplex:")
+    hookeJeeves: HookeJeeves = HookeJeeves(x0=Matrica(elements=[[10]]))
+    hookeJeeves.calculate_hooke_jeeves(f=Funkcije.f1, print_progress=True).print_matrix()
 
 
 def main() -> None:

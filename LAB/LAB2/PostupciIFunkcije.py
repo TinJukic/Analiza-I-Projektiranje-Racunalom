@@ -480,3 +480,79 @@ class NelderMeaduSimplex:
         for i in range(len(xs)):
             if i != l:
                 xs[i] = (xs[i] + xs[l]) / 2  # (pointer, no need for return)
+
+
+class HookeJeeves:
+    def __init__(self, x0: Matrica, delta_x: float = 0.5, e: float = 10e-6):
+        """
+        *HookeJeeves* constructor.
+        :param x0: starting point
+        :param delta_x: delta x for every example
+        :param e: precision
+        """
+        self.__x0: Matrica = x0
+        self.__dx: Matrica = Matrica(elements=[[delta_x for _ in range(len(x0.get_elements()[0]))]])
+        self.__e: Matrica = Matrica(elements=[[e for _ in range(len(x0.get_elements()[0]))]])
+
+    def calculate_hooke_jeeves(self, f, print_progress: bool = False) -> Matrica:
+        """
+        Runs Hooke-Jeeves algorithm on this class.
+        :param f: function that needs to be minimised
+        :param print_progress: tells the program whether the progress should be printed or not
+        :return: found min of the function
+        """
+        num_of_iters: int = 0
+
+        xp: Matrica = Matrica(elements=self.__x0.get_elements())
+        xb: Matrica = Matrica(elements=self.__x0.get_elements())
+
+        while self.__dx > self.__e:
+            xn: Matrica = self.__search_procedure(xp=xp, f=f)
+
+            if f(xn) < f(xb):
+                xp = xn * 2 - xb
+                xb = xn
+            else:
+                for i, dx in enumerate(self.__dx.get_elements()[0]):
+                    self.__dx.set_element_at(position=(0, i), element=dx / 2)
+                xp = xb
+
+        if print_progress:
+            print(f"Number of iterations for Hooke-Jeeves algorithm is {num_of_iters}.")
+
+        return xb
+
+    def __search_procedure(self, xp: Matrica, f) -> Matrica:
+        """
+        Searches for solution.
+        :param xp: starting point for the search procedure
+        :param f: function that needs to be minimised
+        :return: found solution
+        """
+        x: Matrica = Matrica(elements=xp.get_elements())
+
+        for i in range(len(xp.get_elements()[0])):
+            p: Matrica = f(x)
+
+            x.set_element_at(
+                position=(0, i),
+                element=x.get_element_at(position=(0, i)) + self.__dx.get_element_at(position=(0, i))
+            )
+
+            n: Matrica = f(x)
+
+            if n > p:
+                x.set_element_at(
+                    position=(0, i),
+                    element=x.get_element_at(position=(0, i)) - 2 * self.__dx.get_element_at(position=(0, i))
+                )
+
+                n = f(x)
+
+                if n > p:
+                    x.set_element_at(
+                        position=(0, i),
+                        element=x.get_element_at(position=(0, i)) + self.__dx.get_element_at(position=(0, i))
+                    )
+
+        return x
