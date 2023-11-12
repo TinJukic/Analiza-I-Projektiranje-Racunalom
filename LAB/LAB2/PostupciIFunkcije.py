@@ -433,6 +433,8 @@ class NelderMeaduSimplex:
 
         argmin: int = 0
         for i in range(len(x_function_call) - 1):
+            if x_function_call[i] < x_function_call[argmin]:
+                argmin = i
             for j in range(i + 1, len(x_function_call)):
                 if x_function_call[j] < x_function_call[i]:
                     argmin = j
@@ -450,6 +452,8 @@ class NelderMeaduSimplex:
 
         argmax: int = 0
         for i in range(len(x_function_call) - 1):
+            if x_function_call[i] > x_function_call[argmax]:
+                argmax = i
             for j in range(i + 1, len(x_function_call)):
                 if x_function_call[j] > x_function_call[i]:
                     argmax = j
