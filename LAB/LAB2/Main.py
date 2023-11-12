@@ -57,11 +57,11 @@ def zad2() -> None:
 
     print(f"\n\nNelder-Meadu simplex:")
     nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[0.1, 0.3]]))
-    nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f1, print_progress=True).print_matrix()
+    nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f2, print_progress=True).print_matrix()
 
-    # print(f"\n\nHooke-Jeeves simplex:")
-    # hookeJeeves: HookeJeeves = HookeJeeves(x0=Matrica(elements=[[0.1, 0.3]]))
-    # hookeJeeves.calculate_hooke_jeeves(f=Funkcije.f1, print_progress=True).print_matrix()
+    print(f"\n\nHooke-Jeeves simplex:")
+    hookeJeeves: HookeJeeves = HookeJeeves(x0=Matrica(elements=[[0.1, 0.3]]))
+    hookeJeeves.calculate_hooke_jeeves(f=Funkcije.f2, print_progress=True).print_matrix()
 
     print(f"Funkcija f3:")
 
@@ -139,6 +139,10 @@ def zad5() -> None:
     print(f"\n\nNelder-Meadu simplex:")
     nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[0, 0]]))
     nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f6, print_progress=True).print_matrix()
+
+    print(f"\n\nHooke-Jeeves simplex:")
+    hookeJeeves: HookeJeeves = HookeJeeves(x0=Matrica(elements=[[0, 0]]))
+    hookeJeeves.calculate_hooke_jeeves(f=Funkcije.f6, print_progress=True).print_matrix()
 
 
 def main() -> None:
