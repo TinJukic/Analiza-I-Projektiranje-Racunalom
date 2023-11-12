@@ -23,7 +23,7 @@ class Funkcije:
         return pow(x - 4, 2)
 
     @staticmethod
-    def f1(x: float):
+    def f(x: float):
         return pow(x - 3, 2)  # min = 3
 
     @staticmethod
