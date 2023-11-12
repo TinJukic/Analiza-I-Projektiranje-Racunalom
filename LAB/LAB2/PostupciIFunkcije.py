@@ -371,24 +371,25 @@ class NelderMeaduSimplex:
                 xe: Matrica = NelderMeaduSimplex.__expansion(gamma=self.__gamma, xc=xc, xr=xr)
                 xs[h] = xe if f(xe) < f(xs[l]) else xr
             else:
-                all_xr_smaller: bool = True
+                all_xr_larger: bool = True
                 for i in range(len(xs)):
                     if i != h:
-                        if f(xr) >= f(xs[i]):
-                            all_xr_smaller = False
+                        if f(xr) <= f(xs[i]):
+                            all_xr_larger = False
                             break
 
-                if all_xr_smaller:
-                    xs[h] = xr
-                else:
-                    xk: Matrica = NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xr=xr) \
-                        if f(xr) < f(xs[h]) \
-                        else NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xh=xs[h])
+                if all_xr_larger:
+                    if f(xr) < f(xs[h]):
+                        xs[h] = xr
+
+                    xk: Matrica = NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xh=xs[h])
 
                     if f(xk) < f(xs[h]):
                         xs[h] = xk
                     else:
-                        NelderMeaduSimplex.__move_points_to_l(xs=xs, l=l)
+                        NelderMeaduSimplex.__move_points_to_l(sigma=self.__sigma, xs=xs, l=l)
+                else:
+                    xs[h] = xr
 
             result: float = 0.0
             for xi in xs:
@@ -429,14 +430,13 @@ class NelderMeaduSimplex:
         :return: argmin
         """
         x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
-        # x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
 
         argmin: int = 0
         for i in range(len(x_function_call) - 1):
             if x_function_call[i] < x_function_call[argmin]:
                 argmin = i
             for j in range(i + 1, len(x_function_call)):
-                if x_function_call[j] < x_function_call[i]:
+                if x_function_call[j] < x_function_call[argmin]:
                     argmin = j
         return argmin
 
@@ -448,14 +448,13 @@ class NelderMeaduSimplex:
         :return: argmax
         """
         x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
-        # x_function_call: dict[int:Matrica] = {i: lambda l: f(x + l * self.__e) for i, x in enumerate(xs)}
 
         argmax: int = 0
         for i in range(len(x_function_call) - 1):
             if x_function_call[i] > x_function_call[argmax]:
                 argmax = i
             for j in range(i + 1, len(x_function_call)):
-                if x_function_call[j] > x_function_call[i]:
+                if x_function_call[j] > x_function_call[argmax]:
                     argmax = j
         return argmax
 
@@ -496,7 +495,7 @@ class NelderMeaduSimplex:
         :param xr: reflexion point
         :return: expansion point
         """
-        return xc * (1 - gamma) - xr * gamma
+        return xc * (1 + gamma) - xr * gamma
 
     @staticmethod
     def __contraction(alpha: float, beta: float, xc: Matrica, xr: Matrica = None, xh: Matrica = None) -> Matrica:
@@ -508,19 +507,20 @@ class NelderMeaduSimplex:
         :param xh: max value for the argument h (argmax)
         :return: contraction point
         """
-        return xc * (1 - beta) - xr * alpha if xr is not None else xc * (1 - beta) - xh * alpha
+        return xc * (1 - beta) + xh * beta
 
     @staticmethod
-    def __move_points_to_l(xs: list[Matrica], l: int) -> None:
+    def __move_points_to_l(sigma: float, xs: list[Matrica], l: int) -> None:
         """
         Moves all point to l.
+        :param sigma: coefficient sigma
         :param xs: all points in this iteration
         :param l: argmin value
         :return: None
         """
         for i in range(len(xs)):
             if i != l:
-                xs[i] = (xs[i] + xs[l]) / 2  # (pointer, no need for return)
+                xs[i] = (xs[i] + xs[l]) * sigma  # (pointer, no need for return)
 
 
 class HookeJeeves:
