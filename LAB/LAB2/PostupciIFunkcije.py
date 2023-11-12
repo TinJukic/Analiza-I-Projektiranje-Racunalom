@@ -27,9 +27,40 @@ class Funkcije:
         return pow(x - 3, 2)  # min = 3
 
     @staticmethod
+    def f1(x: Matrica):
+        # min = (1, 1), f_min = 0
+        return ((100 * pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2))
+                + pow(1 - x.get_element_at(position=(0, 0)), 2))
+
+    @staticmethod
     def f2(x: Matrica):
         # min = (4, 2), f_min = 0
         return pow((x.get_element_at(position=(0, 0)) - 4), 2) + 4 * pow((x.get_element_at(position=(0, 1)) - 2), 2)
+
+    @staticmethod
+    def f3(x: Matrica):
+        # min = (0, 1, 2, 3, ..., n), f_min = 0
+        summ = 0.0
+        for i, xi in enumerate(x.get_elements()[0]):
+            summ += pow(xi - i, 2)
+        return summ
+
+    @staticmethod
+    def f4(x: Matrica):
+        # min = (0, 0), f_min = 0
+        x.get_element_at(position=(0, 0))
+        return (abs(
+            (x.get_element_at(position=(0, 0)) - x.get_element_at(position=(0, 1))
+             ) * (x.get_element_at(position=(0, 0)) + x.get_element_at(position=(0, 1)))) +
+                math.sqrt(pow(x.get_element_at(position=(0, 0)), 2) + pow(x.get_element_at(position=(0, 1)), 2)))
+
+    @staticmethod
+    def f6(x: Matrica):
+        # min = (0, 0, 0, ..., 0), 1...n, f_min = 0
+        summm = 0.0
+        for xi in x.get_elements()[0]:
+            summm += pow(xi, 2)
+        return 0.5 + (pow(math.sin(math.sqrt(summm)), 2) - 0.5) / pow(1 + 0.001 * summm, 2)
 
 
 class ZlatniRez:
@@ -361,9 +392,15 @@ class NelderMeaduSimplex:
 
             result: float = 0.0
             for xi in xs:
-                element: Matrica = pow(f(xi) - f(xc), 2)  # should always have only one value - scalar
-                result += element.get_element_at(position=(0, 0))
+                element = pow(f(xi) - f(xc), 2)  # should always have only one value - scalar
+                if isinstance(element, float):
+                    result += element
+                else:
+                    element: Matrica
+                    result += element.get_element_at(position=(0, 0))
             result = math.sqrt(result / len(self.__x0.get_elements()[0]))
+
+            print(f"xc = {xc.get_elements()}, result = {result}")
 
             if result <= self.__e:
                 if print_progress:
@@ -518,6 +555,17 @@ class HookeJeeves:
                 for i, dx in enumerate(self.__dx.get_elements()[0]):
                     self.__dx.set_element_at(position=(0, i), element=dx / 2)
                 xp = xb
+
+            fb, fp, fn = f(xb), f(xp), f(xn)
+
+            if isinstance(fb, float):
+                print(f"xb = {xb.get_elements()}, f(xb) = {fb} ; "
+                      f"xp = {xp.get_elements()}, f(xp) = {fp} ; "
+                      f"xn = {xn.get_elements()}, f(xn) = {fn}")
+            else:
+                print(f"xb = {xb.get_elements()}, f(xb) = {fb.get_elements()} ; "
+                      f"xp = {xp.get_elements()}, f(xp) = {fp.get_elements()} ; "
+                      f"xn = {xn.get_elements()}, f(xn) = {fn.get_elements()}")
 
         if print_progress:
             print(f"Number of iterations for Hooke-Jeeves algorithm is {num_of_iters}.")
