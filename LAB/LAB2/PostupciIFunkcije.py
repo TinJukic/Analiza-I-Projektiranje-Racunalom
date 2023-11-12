@@ -29,7 +29,7 @@ class Funkcije:
     @staticmethod
     def f2(x: Matrica):
         # min = (4, 2), f_min = 0
-        return pow((x.get_element_at(position=(0, 0)) - 4), 2) - 4 * pow((x.get_element_at(position=(0, 1)) - 2), 2)
+        return pow((x.get_element_at(position=(0, 0)) - 4), 2) + 4 * pow((x.get_element_at(position=(0, 1)) - 2), 2)
 
 
 class ZlatniRez:
@@ -70,7 +70,7 @@ class ZlatniRez:
         self.__k: float
 
         if x0 is not None:
-            self.__interval = ZlatniRez.find_uni_modal_interval(x0=x0, h=1, f=f)
+            self.__interval = ZlatniRez.find_uni_modal_interval(x0=x0, h=0.1, f=f)
             self.__k = 0.5 * (math.sqrt(5) - 1)
         else:
             self.__interval = Matrica([[a, b]])
@@ -242,20 +242,20 @@ class PretrazivanjePoKoordinatnimOsima:
 
             xs: Matrica = Matrica(elements=x.get_elements())
 
-            # interval: Matrica = ZlatniRez(x0=x, f=func).golden_section(f=func)
-
             for i in range(self.__n):
                 # minimization in one dimension
-                func = lambda l: f(x + self.__e * l)
+                func = lambda l: f(Matrica(elements=[[
+                    x.get_element_at(position=(0, j)) + l * self.__e.get_element_at(position=(0, j))
+                    if i != j else l  # i == j => e == 1
+                    for j in range(len(x.get_elements()[0]))
+                ]]))
+
                 selected_x: float = x.get_element_at(position=(0, i))
-                selected_e: float = self.__e.get_element_at(position=(0, i))
-                # func = lambda l: f(selected_x + l * selected_e)
 
                 interval: Matrica = ZlatniRez(x0=selected_x, f=func).golden_section(f=func)
                 lam: float = (interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2
 
-                new_x = x.get_element_at(position=(0, i)) + lam * self.__e.get_element_at(position=(0, i))
-                x.set_element_at(position=(0, i), element=new_x)
+                x.set_element_at(position=(0, i), element=lam)
 
             if abs(x - xs) < self.__e:
                 break
