@@ -3,7 +3,6 @@
 """
 from PostupciIFunkcije import Funkcije, ZlatniRez, PretrazivanjePoKoordinatnimOsima, NelderMeaduSimplex, HookeJeeves
 from Matrica import Matrica
-import sys
 
 
 def zad1() -> None:
