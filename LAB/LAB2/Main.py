@@ -98,11 +98,11 @@ def zad2() -> None:
 
 def zad3() -> None:
     print(f"\n\nHooke-Jeeves simplex:")
-    hookeJeeves: HookeJeeves = HookeJeeves(x0=Matrica(elements=[[5.1, 1.1]]))
+    hookeJeeves: HookeJeeves = HookeJeeves(x0=Matrica(elements=[[5, 5]]))
     hookeJeeves.calculate_hooke_jeeves(f=Funkcije.f4, print_progress=True).print_matrix()
 
     print(f"\n\nNelder-Meadu simplex:")
-    nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[5.1, 1.1]]))
+    nelderMeadu: NelderMeaduSimplex = NelderMeaduSimplex(x0=Matrica(elements=[[5, 5]]))
     nelderMeadu.calculate_nelder_meadu_simplex(f=Funkcije.f4, print_progress=True).print_matrix()
 
 
