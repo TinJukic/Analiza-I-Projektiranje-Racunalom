@@ -42,7 +42,7 @@ class Funkcije:
         # min = (0, 1, 2, 3, ..., n), f_min = 0
         summ = 0.0
         for i, xi in enumerate(x.get_elements()[0]):
-            summ += pow(xi - i, 2)
+            summ += pow(xi - (i + 1), 2)
         return summ
 
     @staticmethod
