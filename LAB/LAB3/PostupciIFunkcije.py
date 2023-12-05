@@ -8,8 +8,6 @@ import math
 from Matrica import Matrica
 import sys
 
-from sympy import symbols, diff
-
 
 class Funkcije:
     """
@@ -17,98 +15,129 @@ class Funkcije:
     """
 
     @staticmethod
-    def uni_modal_test(x: float):
-        return pow(x, 2) - 2
-
-    @staticmethod
-    def golden_section_test(x: float):
-        return pow(x - 4, 2)
-
-    @staticmethod
-    def f(x: float):
-        return pow(x - 3, 2)  # min = 3
-
-    @staticmethod
-    def f1(x: Matrica):
-        # min = (1, 1), f_min = 0
-        return ((100 * pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2))
-                + pow(1 - x.get_element_at(position=(0, 0)), 2))
-
-    @staticmethod
     def f2(x: Matrica):
-        # min = (4, 2), f_min = 0
-        return pow((x.get_element_at(position=(0, 0)) - 4), 2) + 4 * pow((x.get_element_at(position=(0, 1)) - 2), 2)
+        return pow(x.get_element_at(position=(0, 0)) - 4, 2) + 4 * pow(x.get_element_at(position=(0, 1)) - 2, 2)
 
     @staticmethod
-    def f3(x: Matrica):
-        # min = (0, 1, 2, 3, ..., n), f_min = 0
-        summ = 0.0
-        for i, xi in enumerate(x.get_elements()[0]):
-            summ += pow(xi - (i + 1), 2)
-        return summ
+    def f2_der1_x1(x: Matrica):
+        return 2 * pow(x.get_element_at(position=(0, 0)), 2) - 8
 
     @staticmethod
-    def f4(x: Matrica):
-        # min = (0, 0), f_min = 0
-        x.get_element_at(position=(0, 0))
-        return (abs(
-            (x.get_element_at(position=(0, 0)) - x.get_element_at(position=(0, 1))
-             ) * (x.get_element_at(position=(0, 0)) + x.get_element_at(position=(0, 1)))) +
-                math.sqrt(pow(x.get_element_at(position=(0, 0)), 2) + pow(x.get_element_at(position=(0, 1)), 2)))
+    def f2_der1_x2(x: Matrica):
+        return 8 * pow(x.get_element_at(position=(0, 1)), 2) - 16
 
     @staticmethod
-    def f6(x: Matrica):
-        # min = (0, 0, 0, ..., 0), 1...n, f_min = 0
-        summm = 0.0
-        for xi in x.get_elements()[0]:
-            summm += pow(xi, 2)
-        return 0.5 + (pow(math.sin(math.sqrt(summm)), 2) - 0.5) / pow(1 + 0.001 * summm, 2)
+    def f2_der2_x1(x: Matrica):
+        return 2
+
+    @staticmethod
+    def f2_der2_x2(x: Matrica):
+        return 8
+
+    @staticmethod
+    def f2_lambda(x: Matrica, v: Matrica):
+        return ((4 * v.get_element_at(position=(0, 0)) + 8 * v.get_element_at(position=(0, 1)) -
+                x.get_element_at(position=(0, 0)) * v.get_element_at(position=(0, 0)) -
+                4 * x.get_element_at(position=(0, 1)) * v.get_element_at(position=(0, 1))) /
+                (pow(v.get_element_at(position=(0, 0)), 2) + 4 * pow(v.get_element_at(position=(0, 1)), 2)))
 
 
 class GradijentniSpust:
     """
     Gradient descent algorithm class with all necessary functionality implemented.
     """
-    def __init__(self, x0: Matrica, f=None, e: float = 10e-6, use_golden_section: bool = False):
+    def __init__(
+            self,
+            x0: Matrica,
+            f=None,
+            f_der1_x1=None,
+            f_der1_x2=None,
+            f_der2_x1=None,
+            f_der2_x2=None,
+            f_lambda=None,
+            e: float = 10e-6,
+            use_golden_section: bool = False
+    ):
         """
         *GradijentniSpust* constructor.
         :param x0: starting point
         :param f: function for which the calculation is done
+        :param f_der1_x1: first derivative of the function f in first element
+        :param f_der1_x2: first derivative of the function f in second element
+        :param f_der2_x1: second derivative of the function f in first element
+        :param f_der2_x2: second derivative of the function f in second element
+        :param f_lambda: minimum of the lambda f function in points x and v
         :param e: precision
         :param use_golden_section: determines which method the class will use for solving the problem
         """
         self.__x0: Matrica = x0
         self.__f = f
+        self.__f_der1_x1 = f_der1_x1
+        self.__f_der1_x2 = f_der1_x2
+        self.__f_der2_x1 = f_der2_x1
+        self.__f_der2_x2 = f_der2_x2
+        self.__f_lambda = f_lambda
         self.__e: float = e
         self.__use_golden_section: bool = use_golden_section
 
-    def calculate(self) -> Matrica:
+    def calculate(self) -> Matrica | None:
         """
         Calculates point using desired method passed through the constructor.
-        :return: calculated point
+        :return: calculated point | *None* if the solution could not be found
         """
         return self.__calculate_with_golden_section() if self.__use_golden_section else self.__move_for_fixed_value()
 
-    def __move_for_fixed_value(self) -> Matrica:
+    def __move_for_fixed_value(self) -> Matrica | None:
         """
         Calculates point by moving it for the whole offset.
-        :return: calculated point
+        :return: calculated point | *None* if the solution could not be found
         """
-        ...
+        number_of_non_improvements: int = 0
+        prev_x: Matrica = Matrica(elements=self.__x0.get_elements())
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
 
-    def __calculate_with_golden_section(self) -> Matrica:
+        while True:
+            first_der_in_x1: float = self.__f_der1_x1(x=x)
+            first_der_in_x2: float = self.__f_der1_x2(x=x)
+
+            v: Matrica = Matrica(elements=[[first_der_in_x1], [first_der_in_x2]])
+
+            lam: float = self.__f_lambda(x=x, v=v)
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))],
+                          [x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1))]]
+            )
+
+            if math.sqrt(
+                    pow(x.get_element_at(position=(0, 0)) - new_x.get_element_at(position=(0, 0)), 2) +
+                    pow(x.get_element_at(position=(0, 1)) - new_x.get_element_at(position=(0, 1)), 2)
+            ) < self.__e:
+                return new_x
+
+            if number_of_non_improvements == 10:
+                print(f"Problem divergira!")
+                return None
+            elif math.sqrt(
+                    pow(prev_x.get_element_at(position=(0, 0)) - new_x.get_element_at(position=(0, 0)), 2) +
+                    pow(prev_x.get_element_at(position=(0, 1)) - new_x.get_element_at(position=(0, 1)), 2)
+            ) < self.__e:
+                number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+
+            prev_x = new_x
+            x = new_x
+
+    def __calculate_with_golden_section(self) -> Matrica | None:
         """
         Calculates point by calculating the optimal offset on the line using *ZlatniRez* class.
-        :return: calculated point
+        :return: calculated point | *None* if the solution could not be found
         """
-        ...
+        number_of_non_improvements: int = 0
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
 
-    def __first_derivation_of_function(self):
-        """
-        Calculates the first derivation of a fucntion f.
-        :return:
-        """
-        ...
+        return x
 
 
 class ZlatniRez:
@@ -263,398 +292,3 @@ class ZlatniRez:
                 fl = f(l)
 
         return Matrica([[l, r]])
-
-
-class PretrazivanjePoKoordinatnimOsima:
-    """
-    Coordinate axis search algorithm with all necessary functionality implemented.
-    """
-
-    def __init__(self, x0: Matrica, n: int, e: float = 10e-6):
-        """
-        *PretrazivanjePoKoordinatnimOsima* constructor.
-        :param x0: starting point
-        :param n: number of dimensions
-        :param e: precision vector
-        """
-        self.__x0: Matrica = x0
-        self.__n: int = n
-        self.__e: Matrica = Matrica([[e for _ in range(n)]])
-
-    @staticmethod
-    def load_from_file(file: str) -> PretrazivanjePoKoordinatnimOsima | None:
-        """
-        Loads data for *PretrazivanjePoKoordinatnimOsima* class from file.
-        :param file: file from which the data is loaded
-        :return: new *PretrazivanjePoKoordinatnimOsima* if the file exists | *None* if the file does not exist
-                 or sent values are incorrect
-        """
-        try:
-            with open(file, 'r', encoding='utf-8') as file_coordinate_axis_search:
-                lines: list[str] = file_coordinate_axis_search.readline().strip().split()
-                if len(lines) == 3:
-                    # x0, n, e
-                    # return PretrazivanjePoKoordinatnimOsima(x0=float(lines[0]), n=int(lines[1]), e=float(lines[2]))
-                    ...
-                else:
-                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
-                                     f"'x0' or points 'a' and 'b'.\n")
-                    return None
-        except FileNotFoundError:
-            sys.stderr.write(f"Provided file does not exist!\n")
-            return None
-
-    def coordinate_search(self, f, e: float = 10e-6, print_progress: bool = False) -> Matrica:
-        """
-        Runs coordinate axis search algorithm on this class.
-        :param f: function that needs to be minimised
-        :param e: precision for this search
-        :param print_progress: tells the program whether the progress should be printed or not
-        :return: found coordinate
-        """
-        num_of_iters: int = 0
-
-        x: Matrica = Matrica(elements=self.__x0.get_elements())
-
-        while True:
-            num_of_iters += 1
-
-            xs: Matrica = Matrica(elements=x.get_elements())
-
-            for i in range(self.__n):
-                # minimization in one dimension
-                func = lambda l: f(Matrica(elements=[[
-                    x.get_element_at(position=(0, j)) + l * self.__e.get_element_at(position=(0, j))
-                    if i != j else l  # i == j => e == 1
-                    for j in range(len(x.get_elements()[0]))
-                ]]))
-
-                selected_x: float = x.get_element_at(position=(0, i))
-
-                interval: Matrica = ZlatniRez(x0=selected_x, f=func).golden_section(f=func)
-                lam: float = (interval.get_element_at(position=(0, 0)) + interval.get_element_at(position=(0, 1))) / 2
-
-                x.set_element_at(position=(0, i), element=lam)
-
-            if abs(x - xs) < self.__e:
-                break
-
-        if print_progress:
-            print(f"Number of iterations for coordinate_search is {num_of_iters}.")
-
-        return x
-
-
-class NelderMeaduSimplex:
-    """
-    Nelder-Meadu simplex algorithm with all necessary functionality implemented.
-    """
-
-    def __init__(self, x0: Matrica, e: float = 10e-6, delta_x: float = 1.0, alpha: float = 1.0, beta: float = 0.5,
-                 gamma: float = 2.0, sigma: float = 0.5):
-        """
-        *NelderMeaduSimplex* constructor.
-        :param x0: starting point
-        :param e: precision
-        :param delta_x: shift
-        :param alpha: parameter alpha
-        :param beta: parameter beta
-        :param gamma: parameter gamma
-        :param sigma: parameter sigma
-        """
-        self.__x0: Matrica = x0
-        self.__e: float = e
-        self.__delta_x: float = delta_x
-        self.__alpha: float = alpha
-        self.__beta: float = beta
-        self.__gamma: float = gamma
-        self.__sigma: float = sigma
-
-    @staticmethod
-    def load_from_file(file: str) -> NelderMeaduSimplex | None:
-        """
-        Loads data for *PretrazivanjePoKoordinatnimOsima* class from file.
-        :param file: file from which the data is loaded
-        :return: new *NelderMeaduSimplex* if the file exists | *None* if the file does not exist
-                 or sent values are incorrect
-        """
-        try:
-            with open(file, 'r', encoding='utf-8') as file_coordinate_axis_search:
-                lines: list[str] = file_coordinate_axis_search.readline().strip().split()
-                if len(lines) > 1:
-                    # x0, n, e
-                    # return NelderMeaduSimplex(x0=float(lines[0]))
-                    ...
-                else:
-                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'e' and"
-                                     f"'x0' or points 'a' and 'b'.\n")
-                    return None
-        except FileNotFoundError:
-            sys.stderr.write(f"Provided file does not exist!\n")
-            return None
-
-    def calculate_nelder_meadu_simplex(self, f, print_progress: bool = False) -> Matrica:
-        """
-        Runs Nelder-Meadu algorithm on this class.
-        :param f: function that needs to be minimised
-        :param print_progress: tells the program whether the progress should be printed or not
-        :return: found min of the function
-        """
-        num_of_iters: int = 0
-
-        xs: list[Matrica] = self.__calculate_starting_points()  # vector X[i] -> starting simplex
-
-        while True:
-            num_of_iters += 1
-
-            l: int = self.__argmin(f=f, xs=xs)
-            h: int = self.__argmax(f=f, xs=xs)
-            # s: int = self.__argmin(f=f, xs=xs, h=h)
-
-            k: float = (1 + math.sqrt(5)) / 2
-            xc: Matrica = NelderMeaduSimplex.__find_centroid(x0=self.__x0, xs=xs, h=h)
-            xr: Matrica = NelderMeaduSimplex.__reflexion(alpha=self.__alpha, xc=xc, xh=xs[h])
-
-            if f(xr) < f(xs[l]):
-                xe: Matrica = NelderMeaduSimplex.__expansion(gamma=self.__gamma, xc=xc, xr=xr)
-                xs[h] = xe if f(xe) < f(xs[l]) else xr
-            else:
-                all_xr_larger: bool = True
-                for i in range(len(xs)):
-                    if i != h:
-                        if f(xr) <= f(xs[i]):
-                            all_xr_larger = False
-                            break
-
-                if all_xr_larger:
-                    if f(xr) < f(xs[h]):
-                        xs[h] = xr
-
-                    xk: Matrica = NelderMeaduSimplex.__contraction(alpha=self.__alpha, beta=self.__beta, xc=xc, xh=xs[h])
-
-                    if f(xk) < f(xs[h]):
-                        xs[h] = xk
-                    else:
-                        NelderMeaduSimplex.__move_points_to_l(sigma=self.__sigma, xs=xs, l=l)
-                else:
-                    xs[h] = xr
-
-            result: float = 0.0
-            for xi in xs:
-                element = pow(f(xi) - f(xc), 2)  # should always have only one value - scalar
-                if isinstance(element, float):
-                    result += element
-                else:
-                    element: Matrica
-                    result += element.get_element_at(position=(0, 0))
-            result = math.sqrt(result / len(self.__x0.get_elements()[0]))
-
-            print(f"xc = {xc.get_elements()}, result = {result}")
-
-            if result <= self.__e:
-                if print_progress:
-                    print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
-                return (xs[l] + xs[h]) / 2  # (a + b) / 2
-
-    def __calculate_starting_points(self) -> list[Matrica]:
-        """
-        Calculates starting points of Nelder-Meadu simplex algorithm.
-        :return: starting points
-        """
-        # starting points are calculated by moving starting point on each axis by delta_x value
-        xs: list[Matrica] = [self.__x0]
-
-        for x in self.__x0:
-            x: list[float | int]
-            for i in range(len(x)):
-                xs.append(Matrica(elements=[[element + 1 if i == j else element for j, element in enumerate(x)]]))
-        return xs
-
-    def __argmin(self, f, xs: list[Matrica]) -> int:
-        """
-        Finds the argmin of the function.
-        :param f: desired function
-        :param xs: values for which the min is calculated
-        :return: argmin
-        """
-        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
-
-        argmin: int = 0
-        for i in range(len(x_function_call) - 1):
-            if x_function_call[i] < x_function_call[argmin]:
-                argmin = i
-            for j in range(i + 1, len(x_function_call)):
-                if x_function_call[j] < x_function_call[argmin]:
-                    argmin = j
-        return argmin
-
-    def __argmax(self, f, xs: list[Matrica]) -> int:
-        """
-        Finds the argmax of the function.
-        :param f: desired function
-        :param xs: values for which the max is calculated
-        :return: argmax
-        """
-        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
-
-        argmax: int = 0
-        for i in range(len(x_function_call) - 1):
-            if x_function_call[i] > x_function_call[argmax]:
-                argmax = i
-            for j in range(i + 1, len(x_function_call)):
-                if x_function_call[j] > x_function_call[argmax]:
-                    argmax = j
-        return argmax
-
-    @staticmethod
-    def __find_centroid(x0: Matrica, xs: list[Matrica], h: int) -> Matrica:
-        """
-        Finds the centroid.
-        :param x0: starting point
-        :param xs: list of vectors
-        :param h: argmax value
-        :return: found centroid
-        """
-        xc: Matrica = Matrica(elements=[[0 for _ in range(len(xs[0].get_elements()[0]))]])
-        n: int = len(xs)
-
-        for i in range(n):
-            if i != h:
-                xc += xs[i]
-        return xc / len(x0.get_elements()[0])
-
-    @staticmethod
-    def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:
-        """
-        Performs reflexion.
-        :param alpha: coefficient alpha
-        :param xc: centroid
-        :param xh: max value for the argument h (argmax)
-        :return: reflexion point
-        """
-        return xc * (1 + alpha) - xh * alpha
-
-    @staticmethod
-    def __expansion(gamma: float, xc: Matrica, xr: Matrica) -> Matrica:
-        """
-        Performs expansion.
-        :param gamma: coefficient gamma
-        :param xc: centroid
-        :param xr: reflexion point
-        :return: expansion point
-        """
-        return xc * (1 + gamma) - xr * gamma
-
-    @staticmethod
-    def __contraction(alpha: float, beta: float, xc: Matrica, xr: Matrica = None, xh: Matrica = None) -> Matrica:
-        """
-        Performs contraction.
-        :param beta: coefficient beta
-        :param xc: centroid
-        :param xr: reflexion point
-        :param xh: max value for the argument h (argmax)
-        :return: contraction point
-        """
-        return xc * (1 - beta) + xh * beta
-
-    @staticmethod
-    def __move_points_to_l(sigma: float, xs: list[Matrica], l: int) -> None:
-        """
-        Moves all point to l.
-        :param sigma: coefficient sigma
-        :param xs: all points in this iteration
-        :param l: argmin value
-        :return: None
-        """
-        for i in range(len(xs)):
-            if i != l:
-                xs[i] = (xs[i] + xs[l]) * sigma  # (pointer, no need for return)
-
-
-class HookeJeeves:
-    def __init__(self, x0: Matrica, delta_x: float = 0.5, e: float = 10e-6):
-        """
-        *HookeJeeves* constructor.
-        :param x0: starting point
-        :param delta_x: delta x for every example
-        :param e: precision
-        """
-        self.__x0: Matrica = x0
-        self.__dx: Matrica = Matrica(elements=[[delta_x for _ in range(len(x0.get_elements()[0]))]])
-        self.__e: Matrica = Matrica(elements=[[e for _ in range(len(x0.get_elements()[0]))]])
-
-    def calculate_hooke_jeeves(self, f, print_progress: bool = False) -> Matrica:
-        """
-        Runs Hooke-Jeeves algorithm on this class.
-        :param f: function that needs to be minimised
-        :param print_progress: tells the program whether the progress should be printed or not
-        :return: found min of the function
-        """
-        num_of_iters: int = 0
-
-        xp: Matrica = Matrica(elements=self.__x0.get_elements())
-        xb: Matrica = Matrica(elements=self.__x0.get_elements())
-
-        while self.__dx > self.__e:
-            num_of_iters += 1
-
-            xn: Matrica = self.__search_procedure(xp=xp, f=f)
-
-            if f(xn) < f(xb):
-                xp = xn * 2 - xb
-                xb = xn
-            else:
-                for i, dx in enumerate(self.__dx.get_elements()[0]):
-                    self.__dx.set_element_at(position=(0, i), element=dx / 2)
-                xp = xb
-
-            fb, fp, fn = f(xb), f(xp), f(xn)
-
-            if isinstance(fb, float):
-                print(f"xb = {xb.get_elements()}, f(xb) = {fb} ; "
-                      f"xp = {xp.get_elements()}, f(xp) = {fp} ; "
-                      f"xn = {xn.get_elements()}, f(xn) = {fn}")
-            else:
-                print(f"xb = {xb.get_elements()}, f(xb) = {fb.get_elements()} ; "
-                      f"xp = {xp.get_elements()}, f(xp) = {fp.get_elements()} ; "
-                      f"xn = {xn.get_elements()}, f(xn) = {fn.get_elements()}")
-
-        if print_progress:
-            print(f"Number of iterations for Hooke-Jeeves algorithm is {num_of_iters}.")
-
-        return xb
-
-    def __search_procedure(self, xp: Matrica, f) -> Matrica:
-        """
-        Searches for solution.
-        :param xp: starting point for the search procedure
-        :param f: function that needs to be minimised
-        :return: found solution
-        """
-        x: Matrica = Matrica(elements=xp.get_elements())
-
-        for i in range(len(xp.get_elements()[0])):
-            p: Matrica = f(x)
-
-            x.set_element_at(
-                position=(0, i),
-                element=x.get_element_at(position=(0, i)) + self.__dx.get_element_at(position=(0, i))
-            )
-
-            n: Matrica = f(x)
-
-            if n > p:
-                x.set_element_at(
-                    position=(0, i),
-                    element=x.get_element_at(position=(0, i)) - 2 * self.__dx.get_element_at(position=(0, i))
-                )
-
-                n = f(x)
-
-                if n > p:
-                    x.set_element_at(
-                        position=(0, i),
-                        element=x.get_element_at(position=(0, i)) + self.__dx.get_element_at(position=(0, i))
-                    )
-
-        return x
