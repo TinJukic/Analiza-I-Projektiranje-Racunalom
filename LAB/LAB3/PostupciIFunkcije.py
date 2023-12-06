@@ -20,11 +20,11 @@ class Funkcije:
 
     @staticmethod
     def f2_der1_x1(x: Matrica):
-        return 2 * pow(x.get_element_at(position=(0, 0)), 2) - 8
+        return 2 * x.get_element_at(position=(0, 0)) - 8
 
     @staticmethod
     def f2_der1_x2(x: Matrica):
-        return 8 * pow(x.get_element_at(position=(0, 1)), 2) - 16
+        return 8 * x.get_element_at(position=(0, 1)) - 16
 
     @staticmethod
     def f2_der2_x1(x: Matrica):
@@ -36,25 +36,70 @@ class Funkcije:
 
     @staticmethod
     def f2_lambda(x: Matrica, v: Matrica):
+        def f(lam: float) -> float:
+            return pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)) - 4, 2) + \
+                4 * pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) - 2, 2)
+
+        return f
+
+    @staticmethod
+    def f2_lambda_der(x: Matrica, v: Matrica):
         return ((4 * v.get_element_at(position=(0, 0)) + 8 * v.get_element_at(position=(0, 1)) -
-                x.get_element_at(position=(0, 0)) * v.get_element_at(position=(0, 0)) -
-                4 * x.get_element_at(position=(0, 1)) * v.get_element_at(position=(0, 1))) /
+                 x.get_element_at(position=(0, 0)) * v.get_element_at(position=(0, 0)) -
+                 4 * x.get_element_at(position=(0, 1)) * v.get_element_at(position=(0, 1))) /
                 (pow(v.get_element_at(position=(0, 0)), 2) + 4 * pow(v.get_element_at(position=(0, 1)), 2)))
+
+    @staticmethod
+    def f5_1(x: Matrica):
+        return pow(x.get_element_at(position=(0, 0)), 2) + pow(x.get_element_at(position=(0, 1)), 2) - 1
+
+    @staticmethod
+    def f5_2(x: Matrica):
+        return x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2)
+
+    @staticmethod
+    def f5_1_der1_x1(x: Matrica):
+        return 2 * x.get_element_at(position=(0, 0))
+
+    @staticmethod
+    def f5_1_der1_x2(x: Matrica):
+        return 2 * x.get_element_at(position=(0, 1))
+
+    @staticmethod
+    def f5_2_der1_x1(x: Matrica):
+        return -2 * x.get_element_at(position=(0, 0))
+
+    @staticmethod
+    def f5_2_der1_x2(x: Matrica):
+        return 1
+
+    @staticmethod
+    def f5_lambda(x: Matrica, v: Matrica):
+        def f(lam: float) -> float:
+            return (pow(
+                pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2) +
+                pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)), 2) - 1, 2) +
+                    pow(
+                        x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) -
+                        pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2), 2)
+                    )
+
+        return f
 
 
 class GradijentniSpust:
     """
     Gradient descent algorithm class with all necessary functionality implemented.
     """
+
     def __init__(
             self,
             x0: Matrica,
             f=None,
             f_der1_x1=None,
             f_der1_x2=None,
-            f_der2_x1=None,
-            f_der2_x2=None,
             f_lambda=None,
+            f_lambda_der=None,
             e: float = 10e-6,
             use_golden_section: bool = False
     ):
@@ -64,9 +109,135 @@ class GradijentniSpust:
         :param f: function for which the calculation is done
         :param f_der1_x1: first derivative of the function f in first element
         :param f_der1_x2: first derivative of the function f in second element
+        :param f_lambda: lambda function for the function f
+        :param f_lambda_der: minimum of the lambda f function in points x and v
+        :param e: precision
+        :param use_golden_section: determines which method the class will use for solving the problem
+        """
+        self.__x0: Matrica = x0
+        self.__f = f
+        self.__f_der1_x1 = f_der1_x1
+        self.__f_der1_x2 = f_der1_x2
+        self.__f_lambda = f_lambda
+        self.__f_lambda_der = f_lambda_der
+        self.__e: float = e
+        self.__use_golden_section: bool = use_golden_section
+
+    def calculate(self) -> Matrica | None:
+        """
+        Calculates point using desired method passed through the constructor.
+        :return: calculated point | *None* if the solution could not be found
+        """
+        return self.__calculate_with_golden_section() if self.__use_golden_section else self.__move_for_fixed_value()
+
+    def __move_for_fixed_value(self) -> Matrica | None:
+        """
+        Calculates point by moving it for the whole offset.
+        :return: calculated point | *None* if the solution could not be found
+        """
+        number_of_non_improvements: int = 0
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
+
+        while True:
+            first_der_in_x1: float = self.__f_der1_x1(x=x)
+            first_der_in_x2: float = self.__f_der1_x2(x=x)
+
+            v: Matrica = Matrica(elements=[[-first_der_in_x1, -first_der_in_x2]])
+
+            lam: float = self.__f_lambda_der(x=x, v=v)
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + v.get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + v.get_element_at(position=(0, 1))]]
+            )
+
+            result_der_x1: float = self.__f_der1_x1(x=new_x)
+            result_der_x2: float = self.__f_der1_x2(x=new_x)
+
+            try:
+                if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                    return new_x
+            except OverflowError:
+                print(f"Problem diverges!")
+                return None
+
+            if number_of_non_improvements == 10:
+                print(f"Problem diverges!")
+                return None
+            elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+
+            x = new_x
+
+    def __calculate_with_golden_section(self) -> Matrica | None:
+        """
+        Calculates point by calculating the optimal offset on the line using *ZlatniRez* class.
+        :return: calculated point | *None* if the solution could not be found
+        """
+        number_of_non_improvements: int = 0
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
+
+        while True:
+            first_der_in_x1: float = self.__f_der1_x1(x=x)
+            first_der_in_x2: float = self.__f_der1_x2(x=x)
+
+            v: Matrica = Matrica(elements=[[-first_der_in_x1, -first_der_in_x2]])
+
+            goldSec: ZlatniRez = ZlatniRez(x0=0, f=self.__f_lambda(x=x, v=v))
+            lam: float = goldSec.golden_section(f=self.__f_lambda(x=x, v=v)).get_element_at(position=(0, 0))
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1))]]
+            )
+
+            result_der_x1: float = self.__f_der1_x1(x=new_x)
+            result_der_x2: float = self.__f_der1_x2(x=new_x)
+
+            if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                return new_x
+
+            if number_of_non_improvements == 10:
+                print(f"Problem diverges!")
+                return None
+            elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+
+            x = new_x
+
+
+class NewtonRaphson:
+    """
+    Newton-Raphson algorithm class with all necessary functionality implemented.
+    """
+
+    def __init__(
+            self,
+            x0: Matrica,
+            f=None,
+            f_der1_x1=None,
+            f_der1_x2=None,
+            f_der2_x1=None,
+            f_der2_x2=None,
+            f_lambda=None,
+            f_lambda_der=None,
+            e: float = 10e-6,
+            use_golden_section: bool = False
+    ):
+        """
+        *NewtonRaphson* constructor.
+        :param x0: starting point
+        :param f: function for which the calculation is done
+        :param f_der1_x1: first derivative of the function f in first element
+        :param f_der1_x2: first derivative of the function f in second element
         :param f_der2_x1: second derivative of the function f in first element
         :param f_der2_x2: second derivative of the function f in second element
-        :param f_lambda: minimum of the lambda f function in points x and v
+        :param f_lambda: lambda function for the function f
+        :param f_lambda_der: minimum of the lambda f function in points x and v
         :param e: precision
         :param use_golden_section: determines which method the class will use for solving the problem
         """
@@ -76,6 +247,144 @@ class GradijentniSpust:
         self.__f_der1_x2 = f_der1_x2
         self.__f_der2_x1 = f_der2_x1
         self.__f_der2_x2 = f_der2_x2
+        self.__f_lambda = f_lambda
+        self.__f_lambda_der = f_lambda_der
+        self.__e: float = e
+        self.__use_golden_section: bool = use_golden_section
+
+    def calculate(self) -> Matrica | None:
+        """
+        Calculates point using desired method passed through the constructor.
+        :return: calculated point | *None* if the solution could not be found
+        """
+        return self.__calculate_with_golden_section() if self.__use_golden_section else self.__move_for_fixed_value()
+
+    def __move_for_fixed_value(self) -> Matrica | None:
+        """
+        Calculates point by moving it for the whole offset.
+        :return: calculated point | *None* if the solution could not be found
+        """
+        number_of_non_improvements: int = 0
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
+
+        while True:
+            first_der_in_x1: float = self.__f_der1_x1(x=x)
+            first_der_in_x2: float = self.__f_der1_x2(x=x)
+            second_der_in_x1: float = self.__f_der2_x1(x=x)
+            second_der_in_x2: float = self.__f_der2_x2(x=x)
+
+            hess: Matrica = Matrica(elements=[[-second_der_in_x1, 0], [0, -second_der_in_x2]])
+            v: Matrica = Matrica(elements=[[first_der_in_x1, first_der_in_x2]])
+            delta_x: Matrica = v * hess.inversion()
+
+            # lam: float = self.__f_lambda_der(x=x, v=v)
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + delta_x.get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + delta_x.get_element_at(position=(0, 1))]]
+            )
+
+            result_der_x1: float = self.__f_der1_x1(x=new_x)
+            result_der_x2: float = self.__f_der1_x2(x=new_x)
+
+            try:
+                if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                    return new_x
+            except OverflowError:
+                print(f"Problem diverges!")
+                return None
+
+            if number_of_non_improvements == 10:
+                print(f"Problem diverges!")
+                return None
+            elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+
+            x = new_x
+
+    def __calculate_with_golden_section(self) -> Matrica | None:
+        """
+        Calculates point by calculating the optimal offset on the line using *ZlatniRez* class.
+        :return: calculated point | *None* if the solution could not be found
+        """
+        number_of_non_improvements: int = 0
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
+
+        while True:
+            first_der_in_x1: float = self.__f_der1_x1(x=x)
+            first_der_in_x2: float = self.__f_der1_x2(x=x)
+            second_der_in_x1: float = self.__f_der2_x1(x=x)
+            second_der_in_x2: float = self.__f_der2_x2(x=x)
+
+            hess: Matrica = Matrica(elements=[[-second_der_in_x1, 0], [0, -second_der_in_x2]])
+            v: Matrica = Matrica(elements=[[first_der_in_x1, first_der_in_x2]])
+            delta_x: Matrica = v * hess.inversion()
+
+            goldSec: ZlatniRez = ZlatniRez(x0=0, f=self.__f_lambda(x=x, v=delta_x))
+            lam: float = goldSec.golden_section(f=self.__f_lambda(x=x, v=delta_x)).get_element_at(position=(0, 0))
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + lam * delta_x.get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + lam * delta_x.get_element_at(position=(0, 1))]]
+            )
+
+            result_der_x1: float = self.__f_der1_x1(x=new_x)
+            result_der_x2: float = self.__f_der1_x2(x=new_x)
+
+            if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                return new_x
+
+            if number_of_non_improvements == 10:
+                print(f"Problem diverges!")
+                return None
+            elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+
+            x = new_x
+
+
+class GaussNewton:
+    """
+        Gauss-Newton algorithm class with all necessary functionality implemented.
+    """
+
+    def __init__(
+            self,
+            x0: Matrica,
+            f1=None,
+            f1_der1_x1=None,
+            f1_der1_x2=None,
+            f2=None,
+            f2_der1_x1=None,
+            f2_der1_x2=None,
+            f_lambda=None,
+            e: float = 10e-6,
+            use_golden_section: bool = False
+    ):
+        """
+        *GaussNewton* constructor.
+        :param x0: starting point
+        :param f1: first function for which the calculation is done
+        :param f1_der1_x1: first derivative of the first function f in first element
+        :param f1_der1_x2: first derivative of the first function f in second element
+        :param f2: second function for which the calculation is done
+        :param f2_der1_x1: first derivative of the second function f in first element
+        :param f2_der1_x2: first derivative of the second function f in second element
+        :param f_lambda: lambda function for the function f
+        :param e: precision
+        :param use_golden_section: determines which method the class will use for solving the problem
+        """
+        self.__x0: Matrica = x0
+        self.__f1 = f1
+        self.__f1_der1_x1 = f1_der1_x1
+        self.__f1_der1_x2 = f1_der1_x2
+        self.__f2 = f2
+        self.__f2_der1_x1 = f2_der1_x1
+        self.__f2_der1_x2 = f2_der1_x2
         self.__f_lambda = f_lambda
         self.__e: float = e
         self.__use_golden_section: bool = use_golden_section
@@ -93,40 +402,51 @@ class GradijentniSpust:
         :return: calculated point | *None* if the solution could not be found
         """
         number_of_non_improvements: int = 0
-        prev_x: Matrica = Matrica(elements=self.__x0.get_elements())
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while True:
-            first_der_in_x1: float = self.__f_der1_x1(x=x)
-            first_der_in_x2: float = self.__f_der1_x2(x=x)
+            f1_first_der_in_x1: float = self.__f1_der1_x1(x=x)
+            f1_first_der_in_x2: float = self.__f1_der1_x2(x=x)
+            f2_first_der_in_x1: float = self.__f2_der1_x1(x=x)
+            f2_first_der_in_x2: float = self.__f2_der1_x2(x=x)
 
-            v: Matrica = Matrica(elements=[[first_der_in_x1], [first_der_in_x2]])
+            j: Matrica = Matrica(elements=[[f1_first_der_in_x1, f1_first_der_in_x2],
+                                           [f2_first_der_in_x1, f2_first_der_in_x2]])
+            G: Matrica = Matrica(elements=[[self.__f1(x=x), self.__f2(x=x)]])
 
-            lam: float = self.__f_lambda(x=x, v=v)
+            a: Matrica = ~j * j
+            g: Matrica = G * ~j
+            g *= -1
+
+            # solving the equation
+            LUP = a.LUP_decomposition()
+            A, P, n = LUP
+            perm: Matrica = g * P
+            y: Matrica = a.forward_substitution(b=~perm)
+            delta_x: Matrica = a.backward_substitution(b=y)
 
             new_x: Matrica = Matrica(
-                elements=[[x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))],
-                          [x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1))]]
+                elements=[[x.get_element_at(position=(0, 0)) + (~delta_x).get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + (~delta_x).get_element_at(position=(0, 1))]]
             )
 
-            if math.sqrt(
-                    pow(x.get_element_at(position=(0, 0)) - new_x.get_element_at(position=(0, 0)), 2) +
-                    pow(x.get_element_at(position=(0, 1)) - new_x.get_element_at(position=(0, 1)), 2)
-            ) < self.__e:
-                return new_x
+            try:
+                if ((~delta_x).get_element_at(position=(0, 0)) < self.__e and
+                        (~delta_x).get_element_at(position=(0, 1)) < self.__e):
+                    return new_x
+            except OverflowError:
+                print(f"Problem diverges!")
+                return None
 
             if number_of_non_improvements == 10:
-                print(f"Problem divergira!")
+                print(f"Problem diverges!")
                 return None
-            elif math.sqrt(
-                    pow(prev_x.get_element_at(position=(0, 0)) - new_x.get_element_at(position=(0, 0)), 2) +
-                    pow(prev_x.get_element_at(position=(0, 1)) - new_x.get_element_at(position=(0, 1)), 2)
-            ) < self.__e:
+            elif (abs(self.__f1(x=new_x) - self.__f1(x=x)) < self.__e or
+                  abs(self.__f2(x=new_x) - self.__f2(x=x)) < self.__e):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
 
-            prev_x = new_x
             x = new_x
 
     def __calculate_with_golden_section(self) -> Matrica | None:
@@ -137,7 +457,49 @@ class GradijentniSpust:
         number_of_non_improvements: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
-        return x
+        while True:
+            f1_first_der_in_x1: float = self.__f1_der1_x1(x=x)
+            f1_first_der_in_x2: float = self.__f1_der1_x2(x=x)
+            f2_first_der_in_x1: float = self.__f2_der1_x1(x=x)
+            f2_first_der_in_x2: float = self.__f2_der1_x2(x=x)
+
+            j: Matrica = Matrica(elements=[[f1_first_der_in_x1, f1_first_der_in_x2],
+                                           [f2_first_der_in_x1, f2_first_der_in_x2]])
+            G: Matrica = Matrica(elements=[[self.__f1(x=x), self.__f2(x=x)]])
+
+            a: Matrica = ~j * j
+            g: Matrica = G * ~j
+            g *= -1
+
+            # solving the equation
+            LUP = a.LUP_decomposition()
+            A, P, n = LUP
+            perm: Matrica = g * P
+            y: Matrica = a.forward_substitution(b=~perm)
+            delta_x: Matrica = a.backward_substitution(b=y)
+
+            goldSec: ZlatniRez = ZlatniRez(x0=0, f=self.__f_lambda(x=x, v=(~delta_x)))
+            lam: float = goldSec.golden_section(f=self.__f_lambda(x=x, v=(~delta_x))).get_element_at(position=(0, 0))
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + lam * (~delta_x).get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + lam * (~delta_x).get_element_at(position=(0, 1))]]
+            )
+
+            if ((~delta_x).get_element_at(position=(0, 0)) < self.__e and
+                    (~delta_x).get_element_at(position=(0, 1)) < self.__e):
+                return new_x
+
+            if number_of_non_improvements == 10:
+                print(f"Problem diverges!")
+                return None
+            elif (abs(self.__f1(x=new_x) - self.__f1(x=x)) < self.__e or
+                  abs(self.__f2(x=new_x) - self.__f2(x=x)) < self.__e):
+                number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+
+            x = new_x
 
 
 class ZlatniRez:
