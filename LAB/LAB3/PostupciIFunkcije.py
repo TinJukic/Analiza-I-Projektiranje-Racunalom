@@ -15,6 +15,39 @@ class Funkcije:
     """
 
     @staticmethod
+    def f1(x: Matrica):
+        return 100 * pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2) + \
+               pow(1 - x.get_element_at(position=(0, 0)), 2)
+
+    @staticmethod
+    def f1_der1_x1(x: Matrica):
+        return -400 * x.get_element_at(position=(0, 1)) * x.get_element_at(position=(0, 0)) + \
+               400 * pow(x.get_element_at(position=(0, 0)), 3) - 2 + 2 * x.get_element_at(position=(0, 0))
+
+    @staticmethod
+    def f1_der1_x2(x: Matrica):
+        return 200 * x.get_element_at(position=(0, 1)) - 200 * pow(x.get_element_at(position=(0, 0)), 2)
+
+    @staticmethod
+    def f1_der2_x1(x: Matrica):
+        return -400 * x.get_element_at(position=(0, 1)) + 1200 * pow(x.get_element_at(position=(0, 0)), 2) + 2
+
+    @staticmethod
+    def f1_der2_x2(x: Matrica):
+        return 200
+
+    @staticmethod
+    def f1_lambda(x: Matrica, v: Matrica):
+        def f(lam: float) -> float:
+            return pow(100 * pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)), 2), 2) - \
+                   200 * (x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1))) * \
+                   pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2) + \
+                   100 * pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 4) + 1 - \
+                   2 * (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))) + \
+                   pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2)
+        return f
+
+    @staticmethod
     def f2(x: Matrica):
         return pow(x.get_element_at(position=(0, 0)) - 4, 2) + 4 * pow(x.get_element_at(position=(0, 1)) - 2, 2)
 
@@ -48,6 +81,63 @@ class Funkcije:
                  x.get_element_at(position=(0, 0)) * v.get_element_at(position=(0, 0)) -
                  4 * x.get_element_at(position=(0, 1)) * v.get_element_at(position=(0, 1))) /
                 (pow(v.get_element_at(position=(0, 0)), 2) + 4 * pow(v.get_element_at(position=(0, 1)), 2)))
+
+    @staticmethod
+    def f3(x: Matrica):
+        return pow(x.get_element_at(position=(0, 0)) - 2, 2) + pow(x.get_element_at(position=(0, 1)) + 3, 2)
+
+    @staticmethod
+    def f3_der1_x1(x: Matrica):
+        return 2 * (x.get_element_at(position=(0, 0)) - 2)
+
+    @staticmethod
+    def f3_der1_x2(x: Matrica):
+        return 2 * (x.get_element_at(position=(0, 1)) + 3)
+
+    @staticmethod
+    def fr_der2_x1(x: Matrica):
+        return 2
+
+    @staticmethod
+    def f3_der2_x2(x: Matrica):
+        return 2
+
+    @staticmethod
+    def f3_lambda(x: Matrica, v: Matrica):
+        def f(lam: float) -> float:
+            return pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)) - 2, 2) + \
+                   pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) + 3, 2)
+        return f
+
+    @staticmethod
+    def f4(x: Matrica):
+        return (1 / 4) * pow(x.get_element_at(position=(0, 0)), 4) - pow(x.get_element_at(position=(0, 0)), 2) + \
+               2 * x.get_element_at(position=(0, 0)) + pow(x.get_element_at(position=(0, 1)) - 1, 2)
+
+    @staticmethod
+    def f4_der1_x1(x: Matrica):
+        return pow(x.get_element_at(position=(0, 0)), 3) - 2 * x.get_element_at(position=(0, 0)) + 2
+
+    @staticmethod
+    def f4_der1_x2(x: Matrica):
+        return 2 * x.get_element_at(position=(0, 1)) - 2
+
+    @staticmethod
+    def f4_der2_x1(x: Matrica):
+        return 3 * pow(x.get_element_at(position=(0, 0)), 2) - 2
+
+    @staticmethod
+    def f4_der2_x2(x: Matrica):
+        return 2
+
+    @staticmethod
+    def f4_lambda(x: Matrica, v: Matrica):
+        def f(lam: float) -> float:
+            return (1 / 4) * pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 4) - \
+                   pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2) + \
+                   2 * (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))) + \
+                   pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) - 1, 2)
+        return f
 
     @staticmethod
     def f5_1(x: Matrica):
@@ -144,7 +234,7 @@ class GradijentniSpust:
 
             v: Matrica = Matrica(elements=[[-first_der_in_x1, -first_der_in_x2]])
 
-            lam: float = self.__f_lambda_der(x=x, v=v)
+            # lam: float = self.__f_lambda_der(x=x, v=v)
 
             new_x: Matrica = Matrica(
                 elements=[[x.get_element_at(position=(0, 0)) + v.get_element_at(position=(0, 0)),
