@@ -241,7 +241,7 @@ def zad3() -> None:
     if result is not None:
         result.print_matrix()
 
-    print(f"Newton-Raphson spust bez zlatnog reza.")
+    print(f"Newton-Raphson bez zlatnog reza.")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[3, 3]]),
         f=Funkcije.f4,
@@ -256,7 +256,7 @@ def zad3() -> None:
     if result is not None:
         result.print_matrix()
 
-    print(f"Newton-Raphson spust bez zlatnog reza.")
+    print(f"Newton-Raphson bez zlatnog reza.")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[1, 2]]),
         f=Funkcije.f4,
@@ -356,8 +356,8 @@ def main() -> None:
     # zad1()
     # zad2()
     # zad3()
-    # zad4()
-    zad5()
+    zad4()
+    # zad5()
 
 
 if __name__ == "__main__":

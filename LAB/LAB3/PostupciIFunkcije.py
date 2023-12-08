@@ -303,8 +303,8 @@ class GradijentniSpust:
 
                 if number_of_non_improvements == 10:
                     print(f"Problem diverges!")
-                    return new_x
-                elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                    return None
+                elif self.__f(x=x) < self.__f(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
@@ -350,8 +350,8 @@ class GradijentniSpust:
 
             if number_of_non_improvements == 10:
                 print(f"Problem diverges!")
-                return new_x
-            elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                return None
+            elif self.__f(x=x) < self.__f(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
@@ -450,7 +450,7 @@ class NewtonRaphson:
                 if number_of_non_improvements == 10:
                     print(f"Problem diverges!")
                     return None
-                elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                elif self.__f(x=x) < self.__f(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
@@ -500,8 +500,8 @@ class NewtonRaphson:
 
             if number_of_non_improvements == 10:
                 print(f"Problem diverges!")
-                return new_x
-            elif abs(self.__f(x=new_x) - self.__f(x=x)) < self.__e:
+                return None
+            elif self.__f(x=x) < self.__f(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
@@ -609,8 +609,7 @@ class GaussNewton:
                 if number_of_non_improvements == 10:
                     print(f"Problem diverges!")
                     return None
-                elif (abs(self.__f1(x=new_x) - self.__f1(x=x)) < self.__e or
-                      abs(self.__f2(x=new_x) - self.__f2(x=x)) < self.__e):
+                elif self.__f1(x=x) < self.__f1(x=new_x) or self.__f2(x=x) < self.__f2(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
@@ -670,8 +669,7 @@ class GaussNewton:
             if number_of_non_improvements == 10:
                 print(f"Problem diverges!")
                 return None
-            elif (abs(self.__f1(x=new_x) - self.__f1(x=x)) < self.__e or
-                  abs(self.__f2(x=new_x) - self.__f2(x=x)) < self.__e):
+            elif self.__f1(x=x) < self.__f1(x=new_x) or self.__f2(x=x) < self.__f2(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
