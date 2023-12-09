@@ -54,7 +54,7 @@ class Funkcije:
 
     @staticmethod
     def f1_1_der1_x2(x: Matrica):
-        return 10 * x.get_element_at(position=(0, 1))
+        return 10
 
     @staticmethod
     def f1_1_der2_x1(x: Matrica):
@@ -62,7 +62,7 @@ class Funkcije:
 
     @staticmethod
     def f1_1_der2_x2(x: Matrica):
-        return 10
+        return 0
 
     @staticmethod
     def f1_1_lambda(x: Matrica, v: Matrica):
@@ -278,6 +278,8 @@ class GradijentniSpust:
         :return: calculated point | *None* if the solution could not be found
         """
         num_of_iter: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
         number_of_non_improvements: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
@@ -294,26 +296,36 @@ class GradijentniSpust:
                     elements=[[x.get_element_at(position=(0, 0)) + v.get_element_at(position=(0, 0)),
                                x.get_element_at(position=(0, 1)) + v.get_element_at(position=(0, 1))]]
                 )
+                num_of_grad_calls += 1
 
                 result_der_x1: float = self.__f_der1_x1(x=new_x)
                 result_der_x2: float = self.__f_der1_x2(x=new_x)
+                num_of_grad_calls += 1
 
                 if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                    print(f"Number of function calls = {num_of_fun_calls}\n"
+                          f"Number of gradient calls = {num_of_grad_calls}")
                     return new_x
 
                 if number_of_non_improvements == 10:
+                    print(
+                        f"Number of function calls = {num_of_fun_calls}\n"
+                        f"Number of gradient calls = {num_of_grad_calls}")
                     print(f"Problem diverges!")
                     return None
                 elif self.__f(x=x) < self.__f(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
+                num_of_fun_calls += 2
 
                 x = new_x
             except OverflowError:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 print(f"Problem diverges!")
                 return None
 
+        print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
         print(f"Problem diverges!")
         return None
 
@@ -324,6 +336,8 @@ class GradijentniSpust:
         """
         num_of_iter: int = 0
         number_of_non_improvements: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while num_of_iter < self.__max_num_of_iter:
@@ -335,29 +349,37 @@ class GradijentniSpust:
             v: Matrica = Matrica(elements=[[-first_der_in_x1, -first_der_in_x2]])
 
             goldSec: ZlatniRez = ZlatniRez(x0=0, f=self.__f_lambda(x=x, v=v))
-            lam: float = goldSec.golden_section(f=self.__f_lambda(x=x, v=v)).get_element_at(position=(0, 0))
+            goldSecRes: tuple[Matrica, int] = goldSec.golden_section(f=self.__f_lambda(x=x, v=v))
+            lam: float = goldSecRes[0].get_element_at(position=(0, 0))
+            num_of_fun_calls += goldSecRes[1]
 
             new_x: Matrica = Matrica(
                 elements=[[x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)),
                            x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1))]]
             )
+            num_of_grad_calls += 1
 
             result_der_x1: float = self.__f_der1_x1(x=new_x)
             result_der_x2: float = self.__f_der1_x2(x=new_x)
+            num_of_grad_calls += 1
 
             if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 return new_x
 
             if number_of_non_improvements == 10:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 print(f"Problem diverges!")
                 return None
             elif self.__f(x=x) < self.__f(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
+            num_of_fun_calls += 2
 
             x = new_x
 
+        print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
         print(f"Problem diverges!")
         return None
 
@@ -421,6 +443,9 @@ class NewtonRaphson:
         """
         num_of_iter: int = 0
         number_of_non_improvements: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
+        num_of_hess_calls: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while num_of_iter < self.__max_num_of_iter:
@@ -435,6 +460,8 @@ class NewtonRaphson:
                 hess: Matrica = Matrica(elements=[[-second_der_in_x1, 0], [0, -second_der_in_x2]])
                 v: Matrica = Matrica(elements=[[first_der_in_x1, first_der_in_x2]])
                 delta_x: Matrica = v * hess.inversion()
+                num_of_grad_calls += 1
+                num_of_hess_calls += 1
 
                 new_x: Matrica = Matrica(
                     elements=[[x.get_element_at(position=(0, 0)) + delta_x.get_element_at(position=(0, 0)),
@@ -443,23 +470,41 @@ class NewtonRaphson:
 
                 result_der_x1: float = self.__f_der1_x1(x=new_x)
                 result_der_x2: float = self.__f_der1_x2(x=new_x)
+                num_of_grad_calls += 1
 
                 if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                    print(
+                        f"Number of function calls = {num_of_fun_calls}\n"
+                        f"Number of gradient calls = {num_of_grad_calls}\n"
+                        f"Number of Hess calls = {num_of_hess_calls}")
                     return new_x
 
                 if number_of_non_improvements == 10:
+                    print(
+                        f"Number of function calls = {num_of_fun_calls}\n"
+                        f"Number of gradient calls = {num_of_grad_calls}\n"
+                        f"Number of Hess calls = {num_of_hess_calls}")
                     print(f"Problem diverges!")
                     return None
                 elif self.__f(x=x) < self.__f(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
+                num_of_fun_calls += 2
 
                 x = new_x
             except OverflowError:
+                print(
+                    f"Number of function calls = {num_of_fun_calls}\n"
+                    f"Number of gradient calls = {num_of_grad_calls}\n"
+                    f"Number of Hess calls = {num_of_hess_calls}")
                 print(f"Problem diverges!")
                 return None
 
+        print(
+            f"Number of function calls = {num_of_fun_calls}\n"
+            f"Number of gradient calls = {num_of_grad_calls}\n"
+            f"Number of Hess calls = {num_of_hess_calls}")
         print(f"Problem diverges!")
         return None
 
@@ -470,6 +515,9 @@ class NewtonRaphson:
         """
         num_of_iter: int = 0
         number_of_non_improvements: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
+        num_of_hess_calls: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while num_of_iter < self.__max_num_of_iter:
@@ -483,9 +531,13 @@ class NewtonRaphson:
             hess: Matrica = Matrica(elements=[[-second_der_in_x1, 0], [0, -second_der_in_x2]])
             v: Matrica = Matrica(elements=[[first_der_in_x1, first_der_in_x2]])
             delta_x: Matrica = v * hess.inversion()
+            num_of_grad_calls += 1
+            num_of_hess_calls += 1
 
             goldSec: ZlatniRez = ZlatniRez(x0=0, f=self.__f_lambda(x=x, v=delta_x))
-            lam: float = goldSec.golden_section(f=self.__f_lambda(x=x, v=delta_x)).get_element_at(position=(0, 0))
+            goldSecRes: tuple[Matrica, int] = goldSec.golden_section(f=self.__f_lambda(x=x, v=delta_x))
+            lam: float = goldSecRes[0].get_element_at(position=(0, 0))
+            num_of_fun_calls += goldSecRes[1]
 
             new_x: Matrica = Matrica(
                 elements=[[x.get_element_at(position=(0, 0)) + lam * delta_x.get_element_at(position=(0, 0)),
@@ -494,20 +546,34 @@ class NewtonRaphson:
 
             result_der_x1: float = self.__f_der1_x1(x=new_x)
             result_der_x2: float = self.__f_der1_x2(x=new_x)
+            num_of_grad_calls += 1
 
             if math.sqrt(pow(result_der_x1, 2) + pow(result_der_x2, 2)) < self.__e:
+                print(
+                    f"Number of function calls = {num_of_fun_calls}\n"
+                    f"Number of gradient calls = {num_of_grad_calls}\n"
+                    f"Number of Hess calls = {num_of_hess_calls}")
                 return new_x
 
             if number_of_non_improvements == 10:
+                print(
+                    f"Number of function calls = {num_of_fun_calls}\n"
+                    f"Number of gradient calls = {num_of_grad_calls}\n"
+                    f"Number of Hess calls = {num_of_hess_calls}")
                 print(f"Problem diverges!")
                 return None
             elif self.__f(x=x) < self.__f(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
+            num_of_fun_calls += 2
 
             x = new_x
 
+        print(
+            f"Number of function calls = {num_of_fun_calls}\n"
+            f"Number of gradient calls = {num_of_grad_calls}\n"
+            f"Number of Hess calls = {num_of_hess_calls}")
         print(f"Problem diverges!")
         return None
 
@@ -571,6 +637,8 @@ class GaussNewton:
         """
         num_of_iter: int = 0
         number_of_non_improvements: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while num_of_iter < self.__max_num_of_iter:
@@ -585,6 +653,8 @@ class GaussNewton:
                 j: Matrica = Matrica(elements=[[f1_first_der_in_x1, f1_first_der_in_x2],
                                                [f2_first_der_in_x1, f2_first_der_in_x2]])
                 G: Matrica = Matrica(elements=[[self.__f1(x=x), self.__f2(x=x)]])
+                num_of_fun_calls += 2
+                num_of_grad_calls += 2
 
                 a: Matrica = ~j * j
                 g: Matrica = G * ~j
@@ -604,21 +674,28 @@ class GaussNewton:
 
                 if ((~delta_x).get_element_at(position=(0, 0)) < self.__e and
                         (~delta_x).get_element_at(position=(0, 1)) < self.__e):
+                    print(f"Number of function calls = {num_of_fun_calls}\n"
+                          f"Number of gradient calls = {num_of_grad_calls}")
                     return new_x
 
                 if number_of_non_improvements == 10:
+                    print(f"Number of function calls = {num_of_fun_calls}\n"
+                          f"Number of gradient calls = {num_of_grad_calls}")
                     print(f"Problem diverges!")
                     return None
                 elif self.__f1(x=x) < self.__f1(x=new_x) or self.__f2(x=x) < self.__f2(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
+                num_of_fun_calls += 2
 
                 x = new_x
             except OverflowError:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 print(f"Problem diverges!")
                 return None
 
+        print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
         print(f"Problem diverges!")
         return None
 
@@ -629,6 +706,8 @@ class GaussNewton:
         """
         num_of_iter: int = 0
         number_of_non_improvements: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
         x: Matrica = Matrica(elements=self.__x0.get_elements())
 
         while num_of_iter < self.__max_num_of_iter:
@@ -642,20 +721,24 @@ class GaussNewton:
             j: Matrica = Matrica(elements=[[f1_first_der_in_x1, f1_first_der_in_x2],
                                            [f2_first_der_in_x1, f2_first_der_in_x2]])
             G: Matrica = Matrica(elements=[[self.__f1(x=x), self.__f2(x=x)]])
+            num_of_fun_calls += 2
+            num_of_grad_calls += 2
 
             a: Matrica = ~j * j
-            g: Matrica = G * ~j
+            g: Matrica = (~j) * (~G)
             g *= -1
 
             # solving the equation
             LUP = a.LUP_decomposition()
             A, P, n = LUP
-            perm: Matrica = g * P
-            y: Matrica = a.forward_substitution(b=~perm)
+            perm: Matrica = P * g
+            y: Matrica = a.forward_substitution(b=perm)
             delta_x: Matrica = a.backward_substitution(b=y)
 
             goldSec: ZlatniRez = ZlatniRez(x0=0, f=self.__f_lambda(x=x, v=(~delta_x)))
-            lam: float = goldSec.golden_section(f=self.__f_lambda(x=x, v=(~delta_x))).get_element_at(position=(0, 0))
+            goldSecRes: tuple[Matrica, int] = goldSec.golden_section(f=self.__f_lambda(x=x, v=(~delta_x)))
+            lam: float = goldSecRes[0].get_element_at(position=(0, 0))
+            num_of_fun_calls += goldSecRes[1]
 
             new_x: Matrica = Matrica(
                 elements=[[x.get_element_at(position=(0, 0)) + lam * (~delta_x).get_element_at(position=(0, 0)),
@@ -664,18 +747,22 @@ class GaussNewton:
 
             if ((~delta_x).get_element_at(position=(0, 0)) < self.__e and
                     (~delta_x).get_element_at(position=(0, 1)) < self.__e):
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 return new_x
 
             if number_of_non_improvements == 10:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 print(f"Problem diverges!")
                 return None
             elif self.__f1(x=x) < self.__f1(x=new_x) or self.__f2(x=x) < self.__f2(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
+            num_of_fun_calls += 2
 
             x = new_x
 
+        print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
         print(f"Problem diverges!")
         return None
 
@@ -759,7 +846,7 @@ class ZlatniRez:
             sys.stderr.write(f"Provided file does not exist!\n")
             return None
 
-    def golden_section(self, f, print_progress: bool = False) -> Matrica:
+    def golden_section(self, f, print_progress: bool = False) -> tuple[Matrica, int]:
         """
         Calculates golden section from the interval of this class.
         :param f: function to be used in golden section calculation
@@ -790,7 +877,7 @@ class ZlatniRez:
         if print_progress:
             print(f"Number of iterations for golden_section is {num_of_iters}.")
 
-        return Matrica([[a, b]])
+        return Matrica([[a, b]]), num_of_iters
 
     @staticmethod
     def find_uni_modal_interval(x0: float, h: float, f, print_progress: bool = False) -> Matrica:
