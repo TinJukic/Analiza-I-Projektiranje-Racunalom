@@ -273,9 +273,27 @@ def zad3() -> None:
 
 
 def zad4() -> None:
+    print(f"Gauss-Newton bez zlatnog reza.")
+    gn: GaussNewton = GaussNewton(
+        x0=Matrica(elements=[[-1.9, 2]]),
+        f=Funkcije.f1,
+        f1=Funkcije.f1_1,
+        f1_der1_x1=Funkcije.f1_1_der1_x1,
+        f1_der1_x2=Funkcije.f1_1_der1_x2,
+        f2=Funkcije.f1_2,
+        f2_der1_x1=Funkcije.f1_2_der1_x1,
+        f2_der1_x2=Funkcije.f1_2_der1_x2,
+        f_lambda=Funkcije.f1_lambda
+    )
+
+    result: Matrica | None = gn.calculate()
+    if result is not None:
+        result.print_matrix()
+
     print(f"Gauss-Newton uz zlatni rez.")
     gn: GaussNewton = GaussNewton(
         x0=Matrica(elements=[[-1.9, 2]]),
+        f=Funkcije.f1,
         f1=Funkcije.f1_1,
         f1_der1_x1=Funkcije.f1_1_der1_x1,
         f1_der1_x2=Funkcije.f1_1_der1_x2,

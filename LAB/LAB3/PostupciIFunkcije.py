@@ -586,6 +586,7 @@ class GaussNewton:
     def __init__(
             self,
             x0: Matrica,
+            f=None,
             f1=None,
             f1_der1_x1=None,
             f1_der1_x2=None,
@@ -600,6 +601,7 @@ class GaussNewton:
         """
         *GaussNewton* constructor.
         :param x0: starting point
+        :param f: function for which the calculation is done
         :param f1: first function for which the calculation is done
         :param f1_der1_x1: first derivative of the first function f in first element
         :param f1_der1_x2: first derivative of the first function f in second element
@@ -612,6 +614,7 @@ class GaussNewton:
         :param max_num_of_iter: maximum number of iterations
         """
         self.__x0: Matrica = x0
+        self.__f = f
         self.__f1 = f1
         self.__f1_der1_x1 = f1_der1_x1
         self.__f1_der1_x2 = f1_der1_x2
@@ -657,14 +660,14 @@ class GaussNewton:
                 num_of_grad_calls += 2
 
                 a: Matrica = ~j * j
-                g: Matrica = G * ~j
+                g: Matrica = (~j) * (~G)
                 g *= -1
 
                 # solving the equation
                 LUP = a.LUP_decomposition()
                 A, P, n = LUP
-                perm: Matrica = g * P
-                y: Matrica = a.forward_substitution(b=~perm)
+                perm: Matrica = P * g
+                y: Matrica = a.forward_substitution(b=perm)
                 delta_x: Matrica = a.backward_substitution(b=y)
 
                 new_x: Matrica = Matrica(
@@ -683,7 +686,7 @@ class GaussNewton:
                           f"Number of gradient calls = {num_of_grad_calls}")
                     print(f"Problem diverges!")
                     return None
-                elif self.__f1(x=x) < self.__f1(x=new_x) or self.__f2(x=x) < self.__f2(x=new_x):
+                elif self.__f(x=x) < self.__f(x=new_x):
                     number_of_non_improvements += 1
                 else:
                     number_of_non_improvements = 0
@@ -745,8 +748,8 @@ class GaussNewton:
                            x.get_element_at(position=(0, 1)) + lam * (~delta_x).get_element_at(position=(0, 1))]]
             )
 
-            if ((~delta_x).get_element_at(position=(0, 0)) < self.__e and
-                    (~delta_x).get_element_at(position=(0, 1)) < self.__e):
+            if abs((~delta_x).get_element_at(position=(0, 0)) * lam) < self.__e and \
+                    abs((~delta_x).get_element_at(position=(0, 1)) * lam) < self.__e:
                 print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 return new_x
 
@@ -754,7 +757,7 @@ class GaussNewton:
                 print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
                 print(f"Problem diverges!")
                 return None
-            elif self.__f1(x=x) < self.__f1(x=new_x) or self.__f2(x=x) < self.__f2(x=new_x):
+            elif self.__f(x=x) < self.__f(x=new_x):
                 number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
