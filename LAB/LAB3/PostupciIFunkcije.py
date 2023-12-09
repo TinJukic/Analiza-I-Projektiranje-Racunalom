@@ -17,12 +17,12 @@ class Funkcije:
     @staticmethod
     def f1(x: Matrica):
         return 100 * pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2) + \
-               pow(1 - x.get_element_at(position=(0, 0)), 2)
+            pow(1 - x.get_element_at(position=(0, 0)), 2)
 
     @staticmethod
     def f1_der1_x1(x: Matrica):
         return -400 * x.get_element_at(position=(0, 1)) * x.get_element_at(position=(0, 0)) + \
-               400 * pow(x.get_element_at(position=(0, 0)), 3) - 2 + 2 * x.get_element_at(position=(0, 0))
+            400 * pow(x.get_element_at(position=(0, 0)), 3) - 2 + 2 * x.get_element_at(position=(0, 0))
 
     @staticmethod
     def f1_der1_x2(x: Matrica):
@@ -40,8 +40,9 @@ class Funkcije:
     def f1_lambda(x: Matrica, v: Matrica):
         def f(lam: float) -> float:
             return 100 * pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) -
-                   pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2), 2) + \
-                   pow(1 - (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))), 2)
+                             pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2), 2) + \
+                pow(1 - (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))), 2)
+
         return f
 
     @staticmethod
@@ -69,6 +70,7 @@ class Funkcije:
         def f(lam: float) -> float:
             return 10 * (x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) -
                          pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2))
+
         return f
 
     @staticmethod
@@ -95,6 +97,7 @@ class Funkcije:
     def f1_2_lambda(x: Matrica, v: Matrica):
         def f(lam: float) -> float:
             return 1 - (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)))
+
         return f
 
     @staticmethod
@@ -122,6 +125,7 @@ class Funkcije:
         def f(lam: float) -> float:
             return pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)) - 4, 2) + \
                 4 * pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) - 2, 2)
+
         return f
 
     @staticmethod
@@ -155,13 +159,14 @@ class Funkcije:
     def f3_lambda(x: Matrica, v: Matrica):
         def f(lam: float) -> float:
             return pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)) - 2, 2) + \
-                   pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) + 3, 2)
+                pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) + 3, 2)
+
         return f
 
     @staticmethod
     def f4(x: Matrica):
         return (1 / 4) * pow(x.get_element_at(position=(0, 0)), 4) - pow(x.get_element_at(position=(0, 0)), 2) + \
-               2 * x.get_element_at(position=(0, 0)) + pow(x.get_element_at(position=(0, 1)) - 1, 2)
+            2 * x.get_element_at(position=(0, 0)) + pow(x.get_element_at(position=(0, 1)) - 1, 2)
 
     @staticmethod
     def f4_der1_x1(x: Matrica):
@@ -183,15 +188,16 @@ class Funkcije:
     def f4_lambda(x: Matrica, v: Matrica):
         def f(lam: float) -> float:
             return (1 / 4) * pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 4) - \
-                   pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2) + \
-                   2 * (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))) + \
-                   pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) - 1, 2)
+                pow(x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0)), 2) + \
+                2 * (x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))) + \
+                pow(x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1)) - 1, 2)
+
         return f
 
     @staticmethod
     def f5(x: Matrica):
         return pow(pow(x.get_element_at(position=(0, 0)), 2) + pow(x.get_element_at(position=(0, 1)), 2) - 1, 2) + \
-               pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2)
+            pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2)
 
     @staticmethod
     def f5_1(x: Matrica):
@@ -229,6 +235,112 @@ class Funkcije:
                     )
 
         return f
+
+    @staticmethod
+    def f6(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return x.get_element_at(position=(0, 0)) * math.exp(x.get_element_at(position=(0, 1)) * t) + \
+                x.get_element_at(position=(0, 2)) - y
+
+        return f
+
+    @staticmethod
+    def f6_1(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return x.get_element_at(position=(0, 0)) * math.exp(x.get_element_at(position=(0, 1)) * t)
+
+        return f
+
+    @staticmethod
+    def f6_2(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return x.get_element_at(position=(0, 2))
+
+        return f
+
+    @staticmethod
+    def f6_3(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return y
+
+        return f
+
+    @staticmethod
+    def f6_1_der1_x1(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return math.exp(x.get_element_at(position=(0, 1)) * t)
+
+        return f
+
+    @staticmethod
+    def f6_1_der1_x2(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return x.get_element_at(position=(0, 0)) * math.exp(x.get_element_at(position=(0, 1)) * t) * t
+
+        return f
+
+    @staticmethod
+    def f6_1_der1_x3(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 1
+
+        return f
+
+    def f6_2_der1_x1(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 0
+
+        return f
+
+    @staticmethod
+    def f6_2_der1_x2(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 0
+
+        return f
+
+    @staticmethod
+    def f6_2_der1_x3(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 1
+
+        return f
+
+    def f6_3_der1_x1(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 0
+
+        return f
+
+    @staticmethod
+    def f6_3_der1_x2(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 0
+
+        return f
+
+    @staticmethod
+    def f6_3_der1_x3(t: float, y: float):
+        def f(x: Matrica) -> float:
+            return 0
+
+        return f
+
+    @staticmethod
+    def f6_lambda(elements: list[tuple]):
+        def f6(x: Matrica, v: Matrica):
+            def f(lam: float) -> float:
+                sum: float = 0
+                for t, y in elements:
+                    sum += pow((x.get_element_at(position=(0, 0)) + lam * v.get_element_at(position=(0, 0))) \
+                               * math.exp(
+                        (x.get_element_at(position=(0, 1)) + lam * v.get_element_at(position=(0, 1))) * t) + \
+                               (x.get_element_at(position=(0, 2)) + lam * v.get_element_at(position=(0, 2))) - y, 2)
+                return sum
+
+            return f
+
+        return f6
 
 
 class GradijentniSpust:
@@ -764,6 +876,77 @@ class GaussNewton:
                 return None
             elif self.__f(x=x) < self.__f(x=new_x):
                 number_of_non_improvements += 1
+            else:
+                number_of_non_improvements = 0
+            num_of_fun_calls += 2
+
+            x = new_x
+
+        print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
+        print(f"Problem diverges!")
+        return None
+
+    def calculate_with_golden_section_3_points(self, fs, f_der, f_lams) -> Matrica | None:
+        """
+        Calculates point by calculating the optimal offset on the line using *ZlatniRez* class.
+        :param fs: all functions
+        :param f_der: all derivative functions
+        :param f_lams: all lambda functions
+        :return: calculated point | *None* if the solution could not be found
+        """
+        num_of_iter: int = 0
+        number_of_non_improvements: int = 0
+        num_of_fun_calls: int = 0
+        num_of_grad_calls: int = 0
+        x: Matrica = Matrica(elements=self.__x0.get_elements())
+
+        while num_of_iter < self.__max_num_of_iter:
+            num_of_iter += 1
+
+            j: Matrica = Matrica(elements=[[f_der[0][0](x=x), f_der[0][1](x=x), f_der[0][2](x=x)],
+                                           [f_der[1][0](x=x), f_der[1][1](x=x), f_der[1][2](x=x)],
+                                           [f_der[2][0](x=x), f_der[2][1](x=x), f_der[2][2](x=x)],
+                                           [f_der[3][0](x=x), f_der[3][1](x=x), f_der[3][2](x=x)],
+                                           [f_der[4][0](x=x), f_der[4][1](x=x), f_der[4][2](x=x)],
+                                           [f_der[5][0](x=x), f_der[5][1](x=x), f_der[5][2](x=x)]])
+            G: Matrica = Matrica(elements=[[fs[0](x=x), fs[1](x=x), fs[2](x=x), fs[3](x=x), fs[4](x=x), fs[5](x=x)]])
+            num_of_fun_calls += 3
+            num_of_grad_calls += 3
+
+            a: Matrica = ~j * j
+            g: Matrica = (~j) * (~G)
+            g *= -1
+
+            # solving the equation
+            LUP = a.LUP_decomposition()
+            A, P, n = LUP
+            perm: Matrica = P * g
+            y: Matrica = a.forward_substitution(b=perm)
+            delta_x: Matrica = a.backward_substitution(b=y)
+
+            goldSec: ZlatniRez = ZlatniRez(x0=0, f=f_lams(x=x, v=(~delta_x)))
+            goldSecRes: tuple[Matrica, int] = goldSec.golden_section(f=f_lams(x=x, v=(~delta_x)))
+            lam: float = goldSecRes[0].get_element_at(position=(0, 0))
+            num_of_fun_calls += goldSecRes[1]
+
+            new_x: Matrica = Matrica(
+                elements=[[x.get_element_at(position=(0, 0)) + lam * (~delta_x).get_element_at(position=(0, 0)),
+                           x.get_element_at(position=(0, 1)) + lam * (~delta_x).get_element_at(position=(0, 1)),
+                           x.get_element_at(position=(0, 2)) + lam * (~delta_x).get_element_at(position=(0, 2))]]
+            )
+
+            if abs((~delta_x).get_element_at(position=(0, 0)) * lam) < self.__e and \
+                    abs((~delta_x).get_element_at(position=(0, 1)) * lam) < self.__e and \
+                    abs((~delta_x).get_element_at(position=(0, 2)) * lam) < self.__e:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
+                return new_x
+
+            if number_of_non_improvements == 10:
+                print(f"Number of function calls = {num_of_fun_calls}\nNumber of gradient calls = {num_of_grad_calls}")
+                print(f"Problem diverges!")
+                return None
+            # elif self.__f(x=x) < self.__f(x=new_x):
+            #     number_of_non_improvements += 1
             else:
                 number_of_non_improvements = 0
             num_of_fun_calls += 2

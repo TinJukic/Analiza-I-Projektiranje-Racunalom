@@ -369,7 +369,36 @@ def zad5() -> None:
 
 
 def zad6() -> None:
-    ...
+    print(f"\nGauss-Newton uz zlatni rez.")
+
+    elements: list[tuple[float, float]] = [(1, 3), (2, 4), (3, 4), (5, 5), (6, 6), (7, 8)]
+    fs = []
+    der_fs = []
+    f_lams = Funkcije.f6_lambda(elements=elements)
+
+    for t, y in elements:
+        fs.append(Funkcije.f6(t=t, y=y))
+        der_fs.append(
+            (Funkcije.f6_1_der1_x1(t=t, y=y),
+             Funkcije.f6_1_der1_x2(t=t, y=y),
+             Funkcije.f6_1_der1_x3(t=t, y=y))
+        )
+
+    gn: GaussNewton = GaussNewton(
+        x0=Matrica(elements=[[1, 1, 1]]),
+        f=Funkcije.f6(t=t, y=y),
+        f1=Funkcije.f6_1(t=t, y=y),
+        f1_der1_x1=Funkcije.f6_1_der1_x1(t=t, y=y),
+        f1_der1_x2=Funkcije.f6_1_der1_x2(t=t, y=y),
+        f2=Funkcije.f6_2(t=t, y=y),
+        f2_der1_x1=Funkcije.f6_2_der1_x1(t=t, y=y),
+        f2_der1_x2=Funkcije.f6_2_der1_x2(t=t, y=y),
+        use_golden_section=True
+    )
+
+    result: Matrica | None = gn.calculate_with_golden_section_3_points(fs=fs, f_der=der_fs, f_lams=f_lams)
+    if result is not None:
+        result.print_matrix()
 
 
 def main() -> None:
@@ -378,7 +407,8 @@ def main() -> None:
     # zad2()
     # zad3()
     # zad4()
-    zad5()
+    # zad5()
+    zad6()
 
 
 if __name__ == "__main__":
