@@ -38,6 +38,7 @@ def proba() -> None:
 
     gn: GaussNewton = GaussNewton(
         x0=Matrica(elements=[[-2, 2]]),
+        f=Funkcije.f5,
         f1=Funkcije.f5_1,
         f1_der1_x1=Funkcije.f5_1_der1_x1,
         f1_der1_x2=Funkcije.f5_1_der1_x2,
@@ -402,13 +403,13 @@ def zad6() -> None:
 
 
 def main() -> None:
-    # proba()
+    proba()
     # zad1()
     # zad2()
     # zad3()
     # zad4()
     # zad5()
-    zad6()
+    # zad6()
 
 
 if __name__ == "__main__":
