@@ -219,6 +219,7 @@ def zad2() -> None:
 
 def zad3() -> None:
     print(f"\nNewton-Raphson uz zlatni rez.")
+    print(f"x0 = (3, 3)")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[3, 3]]),
         f=Funkcije.f4,
@@ -237,6 +238,7 @@ def zad3() -> None:
         result.print_matrix()
 
     print(f"\nNewton-Raphson uz zlatni rez.")
+    print(f"x0 = (1, 2)")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[1, 2]]),
         f=Funkcije.f4,
@@ -255,6 +257,7 @@ def zad3() -> None:
         result.print_matrix()
 
     print(f"Newton-Raphson bez zlatnog reza.")
+    print(f"x0 = (3, 3)")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[3, 3]]),
         f=Funkcije.f4,
@@ -272,6 +275,7 @@ def zad3() -> None:
         result.print_matrix()
 
     print(f"\nNewton-Raphson bez zlatnog reza.")
+    print(f"x0 = (1, 2)")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[1, 2]]),
         f=Funkcije.f4,
@@ -423,9 +427,9 @@ def main() -> None:
     # zad1()
     # zad2()
     # zad3()
-    zad4()
+    # zad4()
     # zad5()
-    # zad6()
+    zad6()
 
 
 if __name__ == "__main__":
