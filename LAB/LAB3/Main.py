@@ -119,6 +119,8 @@ def zad2() -> None:
         f=Funkcije.f1,
         f_der1_x1=Funkcije.f1_der1_x1,
         f_der1_x2=Funkcije.f1_der1_x2,
+        f_der1_x1_x2=Funkcije.f1_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f1_der1_x2_x1,
         f_der2_x1=Funkcije.f1_der2_x1,
         f_der2_x2=Funkcije.f1_der2_x2,
         f_lambda=Funkcije.f1_lambda
@@ -134,6 +136,8 @@ def zad2() -> None:
         f=Funkcije.f1,
         f_der1_x1=Funkcije.f1_der1_x1,
         f_der1_x2=Funkcije.f1_der1_x2,
+        f_der1_x1_x2=Funkcije.f1_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f1_der1_x2_x1,
         f_der2_x1=Funkcije.f1_der2_x1,
         f_der2_x2=Funkcije.f1_der2_x2,
         f_lambda=Funkcije.f1_lambda,
@@ -181,6 +185,8 @@ def zad2() -> None:
         f=Funkcije.f2,
         f_der1_x1=Funkcije.f2_der1_x1,
         f_der1_x2=Funkcije.f2_der1_x2,
+        f_der1_x1_x2=Funkcije.f2_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f2_der1_x2_x1,
         f_der2_x1=Funkcije.f2_der2_x1,
         f_der2_x2=Funkcije.f2_der2_x2,
         f_lambda=Funkcije.f2_lambda,
@@ -197,6 +203,8 @@ def zad2() -> None:
         f=Funkcije.f2,
         f_der1_x1=Funkcije.f2_der1_x1,
         f_der1_x2=Funkcije.f2_der1_x2,
+        f_der1_x1_x2=Funkcije.f2_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f2_der1_x2_x1,
         f_der2_x1=Funkcije.f2_der2_x1,
         f_der2_x2=Funkcije.f2_der2_x2,
         f_lambda=Funkcije.f2_lambda,
@@ -216,6 +224,8 @@ def zad3() -> None:
         f=Funkcije.f4,
         f_der1_x1=Funkcije.f4_der1_x1,
         f_der1_x2=Funkcije.f4_der1_x2,
+        f_der1_x1_x2=Funkcije.f2_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f2_der1_x2_x1,
         f_der2_x1=Funkcije.f4_der2_x1,
         f_der2_x2=Funkcije.f4_der2_x2,
         f_lambda=Funkcije.f4_lambda,
@@ -232,6 +242,8 @@ def zad3() -> None:
         f=Funkcije.f4,
         f_der1_x1=Funkcije.f4_der1_x1,
         f_der1_x2=Funkcije.f4_der1_x2,
+        f_der1_x1_x2=Funkcije.f2_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f2_der1_x2_x1,
         f_der2_x1=Funkcije.f4_der2_x1,
         f_der2_x2=Funkcije.f4_der2_x2,
         f_lambda=Funkcije.f4_lambda,
@@ -248,6 +260,8 @@ def zad3() -> None:
         f=Funkcije.f4,
         f_der1_x1=Funkcije.f4_der1_x1,
         f_der1_x2=Funkcije.f4_der1_x2,
+        f_der1_x1_x2=Funkcije.f2_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f2_der1_x2_x1,
         f_der2_x1=Funkcije.f4_der2_x1,
         f_der2_x2=Funkcije.f4_der2_x2,
         f_lambda=Funkcije.f4_lambda
@@ -257,12 +271,14 @@ def zad3() -> None:
     if result is not None:
         result.print_matrix()
 
-    print(f"Newton-Raphson bez zlatnog reza.")
+    print(f"\nNewton-Raphson bez zlatnog reza.")
     nr: NewtonRaphson = NewtonRaphson(
         x0=Matrica(elements=[[1, 2]]),
         f=Funkcije.f4,
         f_der1_x1=Funkcije.f4_der1_x1,
         f_der1_x2=Funkcije.f4_der1_x2,
+        f_der1_x1_x2=Funkcije.f2_der1_x1_x2,
+        f_der1_x2_x1=Funkcije.f2_der1_x2_x1,
         f_der2_x1=Funkcije.f4_der2_x1,
         f_der2_x2=Funkcije.f4_der2_x2,
         f_lambda=Funkcije.f4_lambda
@@ -403,11 +419,11 @@ def zad6() -> None:
 
 
 def main() -> None:
-    proba()
+    # proba()
     # zad1()
     # zad2()
     # zad3()
-    # zad4()
+    zad4()
     # zad5()
     # zad6()
 

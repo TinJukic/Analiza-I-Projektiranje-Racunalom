@@ -29,6 +29,14 @@ class Funkcije:
         return 200 * x.get_element_at(position=(0, 1)) - 200 * pow(x.get_element_at(position=(0, 0)), 2)
 
     @staticmethod
+    def f1_der1_x1_x2(x: Matrica):
+        return -400 * x.get_element_at(position=(0, 0))
+
+    @staticmethod
+    def f1_der1_x2_x1(x: Matrica):
+        return -400 * x.get_element_at(position=(0, 0))
+
+    @staticmethod
     def f1_der2_x1(x: Matrica):
         return -400 * x.get_element_at(position=(0, 1)) + 1200 * pow(x.get_element_at(position=(0, 0)), 2) + 2
 
@@ -111,6 +119,14 @@ class Funkcije:
     @staticmethod
     def f2_der1_x2(x: Matrica):
         return 8 * x.get_element_at(position=(0, 1)) - 16
+
+    @staticmethod
+    def f2_der1_x1_x2(x: Matrica):
+        return 0
+
+    @staticmethod
+    def f2_der1_x2_x1(x: Matrica):
+        return 0
 
     @staticmethod
     def f2_der2_x1(x: Matrica):
@@ -512,6 +528,8 @@ class NewtonRaphson:
             f=None,
             f_der1_x1=None,
             f_der1_x2=None,
+            f_der1_x1_x2=None,
+            f_der1_x2_x1=None,
             f_der2_x1=None,
             f_der2_x2=None,
             f_lambda=None,
@@ -526,6 +544,8 @@ class NewtonRaphson:
         :param f: function for which the calculation is done
         :param f_der1_x1: first derivative of the function f in first element
         :param f_der1_x2: first derivative of the function f in second element
+        :param f_der1_x1_x2: first derivative of the function f in first and second element
+        :param f_der1_x2_x1: first derivative of the function f in second and first element
         :param f_der2_x1: second derivative of the function f in first element
         :param f_der2_x2: second derivative of the function f in second element
         :param f_lambda: lambda function for the function f
@@ -538,6 +558,8 @@ class NewtonRaphson:
         self.__f = f
         self.__f_der1_x1 = f_der1_x1
         self.__f_der1_x2 = f_der1_x2
+        self.__f_der1_x1_x2 = f_der1_x1_x2
+        self.__f_der1_x2_x1 = f_der1_x2_x1
         self.__f_der2_x1 = f_der2_x1
         self.__f_der2_x2 = f_der2_x2
         self.__f_lambda = f_lambda
@@ -573,8 +595,11 @@ class NewtonRaphson:
                 first_der_in_x2: float = self.__f_der1_x2(x=x)
                 second_der_in_x1: float = self.__f_der2_x1(x=x)
                 second_der_in_x2: float = self.__f_der2_x2(x=x)
+                first_der_in_x1_x2: float = self.__f_der1_x1_x2(x=x)
+                first_der_in_x2_x1: float = self.__f_der1_x2_x1(x=x)
 
-                hess: Matrica = Matrica(elements=[[-second_der_in_x1, 0], [0, -second_der_in_x2]])
+                hess: Matrica = Matrica(elements=[[-second_der_in_x1, -first_der_in_x1_x2],
+                                                  [-first_der_in_x2_x1, -second_der_in_x2]])
                 v: Matrica = Matrica(elements=[[first_der_in_x1, first_der_in_x2]])
                 delta_x: Matrica = v * hess.inversion()
                 num_of_grad_calls += 1
