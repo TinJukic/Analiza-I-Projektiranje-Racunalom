@@ -314,6 +314,7 @@ def zad5() -> None:
     print(f"x0 = (-2, 2)")
     gn: GaussNewton = GaussNewton(
         x0=Matrica(elements=[[-2, 2]]),
+        f=Funkcije.f5,
         f1=Funkcije.f5_1,
         f1_der1_x1=Funkcije.f5_1_der1_x1,
         f1_der1_x2=Funkcije.f5_1_der1_x2,
@@ -332,6 +333,7 @@ def zad5() -> None:
     print(f"x0 = (2, 2)")
     gn: GaussNewton = GaussNewton(
         x0=Matrica(elements=[[2, 2]]),
+        f=Funkcije.f5,
         f1=Funkcije.f5_1,
         f1_der1_x1=Funkcije.f5_1_der1_x1,
         f1_der1_x2=Funkcije.f5_1_der1_x2,
@@ -350,6 +352,7 @@ def zad5() -> None:
     print(f"x0 = (2, -2)")
     gn: GaussNewton = GaussNewton(
         x0=Matrica(elements=[[2, -2]]),
+        f=Funkcije.f5,
         f1=Funkcije.f5_1,
         f1_der1_x1=Funkcije.f5_1_der1_x1,
         f1_der1_x2=Funkcije.f5_1_der1_x2,
@@ -374,8 +377,8 @@ def main() -> None:
     # zad1()
     # zad2()
     # zad3()
-    zad4()
-    # zad5()
+    # zad4()
+    zad5()
 
 
 if __name__ == "__main__":

@@ -189,6 +189,11 @@ class Funkcije:
         return f
 
     @staticmethod
+    def f5(x: Matrica):
+        return pow(pow(x.get_element_at(position=(0, 0)), 2) + pow(x.get_element_at(position=(0, 1)), 2) - 1, 2) + \
+               pow(x.get_element_at(position=(0, 1)) - pow(x.get_element_at(position=(0, 0)), 2), 2)
+
+    @staticmethod
     def f5_1(x: Matrica):
         return pow(x.get_element_at(position=(0, 0)), 2) + pow(x.get_element_at(position=(0, 1)), 2) - 1
 
