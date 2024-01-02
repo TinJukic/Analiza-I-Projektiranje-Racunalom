@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import math
+import random
 
 from Matrica import Matrica
 import sys
@@ -34,6 +35,80 @@ class Funkcije:
     def f5(x: Matrica):
         # min: (3, 0), f_min: 0, start: (0, 0)s
         return pow(x.get_element_at(position=(0, 0)) - 3, 2) + pow(x.get_element_at(position=(0, 1)), 2)
+
+
+class Ogranicenja:
+    """
+    Contains all boundaries needed for the *Box* algorithm.
+    """
+
+    @staticmethod
+    def implicit_1_1(x: Matrica) -> bool:
+        return x.get_element_at(position=(0, 1)) - x.get_element_at(position=(0, 0)) >= 0
+
+    @staticmethod
+    def implicit_1_2(x: Matrica) -> bool:
+        return 2 - x.get_element_at(position=(0, 0)) >= 0
+
+    @staticmethod
+    def explicit_1_1(x: Matrica) -> bool:
+        for element in x.get_elements():
+            for e in element:
+                if e < -100 or e > 100:
+                    return False
+        return True
+
+    @staticmethod
+    def implicit_3_1(x: Matrica) -> bool:
+        return 3 - x.get_element_at(position=(0, 0)) - x.get_element_at(position=(0, 1)) >= 0
+
+    @staticmethod
+    def implicit_3_2(x: Matrica) -> bool:
+        return 3 + 1.5 * x.get_element_at(position=(0, 0)) - x.get_element_at(position=(0, 1)) >= 0
+
+    @staticmethod
+    def explicit_3_1(x: Matrica) -> bool:
+        return x.get_element_at(position=(0, 1)) - 1 >= 0
+
+
+class Box:
+    """
+    Box algorithm class with all necessary functionality implemented.
+    """
+
+    def __init__(self, x0: Matrica, implicit: list, explicit: list, e: float = 10e-6, alpha: float = 1.3):
+        """
+        *Box* constructor.
+        :param x0: starting point
+        :param implicit: implicit boundaries (functions)
+        :param explicit: explicit boundaries (functions)
+        :param e: precision
+        :param alpha: parameter alpha
+        """
+        self.__x0: Matrica = x0
+        self.__implicit: list = implicit
+        self.__explicit: list = explicit
+        self.__e: float = e
+        self.alpha: float = alpha
+
+    def calculate(self, f, print_progress: bool = True) -> Matrica:
+        """
+        Runs Box algorithm on this class.
+        :param f: function that needs to be minimised
+        :param print_progress: tells the program whether the progress should be printed or not
+        :return: found min of the function
+        """
+        xc: Matrica = Matrica(elements=self.__x0.get_elements())  # copy the starting point
+        X: list[Matrica] = [self.__x0]
+
+        n: int = len(self.__x0.get_elements()[0])
+
+        for j in range(1, 2 * n + 1):
+            for i in range(n):
+                r = random.random()
+
+        while True:
+            ...
 
 
 class GradijentniSpust:
