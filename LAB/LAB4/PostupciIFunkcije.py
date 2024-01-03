@@ -76,39 +76,264 @@ class Box:
     Box algorithm class with all necessary functionality implemented.
     """
 
-    def __init__(self, x0: Matrica, implicit: list, explicit: list, e: float = 10e-6, alpha: float = 1.3):
+    def __init__(
+            self,
+            x0: Matrica,
+            implicit: list,
+            explicit: list,
+            explicit_values: list[int],
+            e: float = 10e-6,
+            alpha: float = 1.3,
+            max_num_of_iters: int = 1000
+    ):
         """
         *Box* constructor.
         :param x0: starting point
         :param implicit: implicit boundaries (functions)
         :param explicit: explicit boundaries (functions)
+        :param explicit_values: explicit values (interval of numbers)
         :param e: precision
         :param alpha: parameter alpha
+        :param max_num_of_iters: maximum number of iterations
         """
         self.__x0: Matrica = x0
         self.__implicit: list = implicit
         self.__explicit: list = explicit
+        self.__explicit_values: list[int] = explicit_values
         self.__e: float = e
-        self.alpha: float = alpha
+        self.__alpha: float = alpha
+        self.__max_num_of_iters: int = max_num_of_iters
 
-    def calculate(self, f, print_progress: bool = True) -> Matrica:
+    def calculate(self, f, print_progress: bool = False) -> Matrica | None:
         """
         Runs Box algorithm on this class.
         :param f: function that needs to be minimised
         :param print_progress: tells the program whether the progress should be printed or not
-        :return: found min of the function
+        :return: found min of the function | *None* if min could not be found
         """
         xc: Matrica = Matrica(elements=self.__x0.get_elements())  # copy the starting point
         X: list[Matrica] = [self.__x0]
 
+        # first check initial boundaries (xc == x0)
+        if not self.__check_implicit_boundaries(x=xc) or not self.__check_explicit_boundaries(x=xc):
+            return None
+
         n: int = len(self.__x0.get_elements()[0])
 
-        for j in range(1, 2 * n + 1):
-            for i in range(n):
-                r = random.random()
+        # defining l and h
+        h: int = -1
+        l: int = -1
 
-        while True:
-            ...
+        for j in range(1, 2 * n + 1):
+            # create new empty matrix to store into X list
+            x: Matrica = Matrica()
+
+            for i in range(n):
+                # random values store in matrix x
+                r = random.random()
+                x.set_element_at(
+                    position=(0, i),
+                    element=self.__explicit_values[0] + r * (self.__explicit_values[0] + self.__explicit_values[1])
+                )
+
+            X.append(x)
+
+            while not self.__check_implicit_boundaries(x=X[j]):
+                X[j] = Box.__move_to_centroid(x=X[j], xc=xc)
+
+            # calculate new centroid using all points
+            xc = Box.__find_centroid(x0=self.__x0, xs=X, h=None)
+
+        num_of_iters: int = 1  # to prevent infinite loop
+        diverges: int = 0  # to prevent divergence
+
+        while num_of_iters < self.__max_num_of_iters + 1:
+            # find min and max element
+            l = Box.__argmin(f=f, xs=X)
+            h = Box.__argmax(f=f, xs=X)
+            second_h: int = Box.__second_argmax(f=f, xs=X, h=h)
+
+            # find current min of the function
+            current_min: float = f(x=X[l])
+
+            # calculate new centroid without xh point
+            xc = Box.__find_centroid(x0=self.__x0, xs=X, h=h)
+
+            # reflexion point
+            xr: Matrica = Box.__reflexion(alpha=self.__alpha, xc=xc, xh=X[h])
+
+            # move boundary to explicit boundaries
+            for i in range(n):
+                if xr.get_element_at(position=(0, i)) < self.__explicit_values[0]:
+                    xr.set_element_at(position=(0, i), element=self.__explicit_values[0])
+                elif xr.get_element_at(position=(0, i)) > self.__explicit_values[1]:
+                    xr.set_element_at(position=(1, i), element=self.__explicit_values[1])
+
+            # check implicit boundaries for xr
+            while not self.__check_implicit_boundaries(x=xr):
+                xr = Box.__move_to_centroid(x=xr, xc=xc)
+
+            # if xr is still the worse, update it once more
+            if f(x=xr) > f(x=X[second_h]):
+                xr = Box.__move_to_centroid(x=xr, xc=xc)
+
+            X[h] = xr
+            l = Box.__argmin(f=f, xs=X)  # calculate new min point
+
+            if diverges == 10:
+                print(f"Problem diverges!")
+                return None
+
+            result: float = 0.0
+            for xi in X:
+                element = pow(f(xi) - f(xc), 2)  # should always have only one value - scalar
+                if isinstance(element, float):
+                    result += element
+                else:
+                    element: Matrica
+                    result += element.get_element_at(position=(0, 0))
+            result = math.sqrt(result / len(self.__x0.get_elements()[0]))
+
+            print(f"xc = {xc.get_elements()}, result = {result}")
+
+            if result <= self.__e:
+                if print_progress:
+                    print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
+                return (X[l] + X[h]) / 2  # (a + b) / 2
+
+            # didn't return - diverges?
+            if f(x=X[l]) > current_min:
+                diverges += 1
+
+    def __check_implicit_boundaries(self, x: Matrica) -> bool:
+        """
+        Checks whether the implicit boundaries are satisfied by point x.
+        :param x: point for which the implicit boundaries are checked
+        :return: *True* if the boundaries are satisfied, *False* otherwise
+        """
+        for implicit in self.__implicit:
+            # check all implicit boundaries
+            if not implicit(x=x):
+                return False
+        return True
+
+    def __check_explicit_boundaries(self, x: Matrica) -> bool:
+        """
+        Checks whether the explicit boundaries are satisfied by point x.
+        :param x: point for which the explicit boundaries are checked
+        :return: *True* if the explicit boundaries are satisfied, *False* otherwise
+        """
+        for explicit in self.__explicit:
+            # check all explicit boundaries
+            if not explicit(x=x):
+                return False
+        return True
+
+    @staticmethod
+    def __move_to_centroid(x: Matrica, xc: Matrica) -> Matrica:
+        """
+        Moves point x to the centroid xc.
+        :param x: point to be moved
+        :param xc: centroid point
+        :return: moved point to centroid point
+        """
+        new_x: Matrica = Matrica()
+
+        for i in range(len(x.get_elements()[0])):  # n
+            new_x.set_element_at(
+                position=(0, i),
+                element=0.5 * (x.get_element_at(position=(0, i)) + xc.get_element_at(position=(0, i)))
+            )
+
+        return new_x
+
+    @staticmethod
+    def __argmin(f, xs: list[Matrica]) -> int:
+        """
+        Finds the argmin of the function.
+        :param f: desired function
+        :param xs: values for which the min is calculated
+        :return: argmin
+        """
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+
+        argmin: int = 0
+        for i in range(len(x_function_call) - 1):
+            if x_function_call[i] < x_function_call[argmin]:
+                argmin = i
+            for j in range(i + 1, len(x_function_call)):
+                if x_function_call[j] < x_function_call[argmin]:
+                    argmin = j
+        return argmin
+
+    @staticmethod
+    def __argmax(f, xs: list[Matrica]) -> int:
+        """
+        Finds the argmax of the function.
+        :param f: desired function
+        :param xs: values for which the max is calculated
+        :return: argmax
+        """
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+
+        argmax: int = 0
+        for i in range(len(x_function_call) - 1):
+            if x_function_call[i] > x_function_call[argmax]:
+                argmax = i
+            for j in range(i + 1, len(x_function_call)):
+                if x_function_call[j] > x_function_call[argmax]:
+                    argmax = j
+        return argmax
+
+    @staticmethod
+    def __second_argmax(f, xs: list[Matrica], h: int) -> int:
+        """
+        Finds the argmax of the function.
+        :param f: desired function
+        :param xs: values for which the max is calculated
+        :param h: argmax
+        :return: second argmax
+        """
+        x_function_call: dict[int:Matrica] = {i: f(x) for i, x in enumerate(xs)}
+
+        argmax: int = 0
+        for i in range(len(x_function_call) - 1):
+            if i == h:
+                continue
+            if x_function_call[i] > x_function_call[argmax]:
+                argmax = i
+            for j in range(i + 1, len(x_function_call)):
+                if x_function_call[j] > x_function_call[argmax]:
+                    argmax = j
+        return argmax
+
+    @staticmethod
+    def __find_centroid(x0: Matrica, xs: list[Matrica], h: int | None) -> Matrica:
+        """
+        Finds the centroid.
+        :param x0: starting point
+        :param xs: list of vectors
+        :param h: argmax value | None if it should not be used
+        :return: found centroid
+        """
+        xc: Matrica = Matrica(elements=[[0 for _ in range(len(xs[0].get_elements()[0]))]])
+        n: int = len(xs)
+
+        for i in range(n):
+            if i != h or h is None:
+                xc += xs[i]
+        return xc / len(x0.get_elements()[0])
+
+    @staticmethod
+    def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:
+        """
+        Performs reflexion.
+        :param alpha: coefficient alpha
+        :param xc: centroid
+        :param xh: max value for the argument h (argmax)
+        :return: reflexion point
+        """
+        return xc * (1 + alpha) - xh * alpha
 
 
 class GradijentniSpust:
