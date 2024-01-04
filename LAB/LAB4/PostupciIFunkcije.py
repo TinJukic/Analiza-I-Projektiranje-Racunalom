@@ -320,7 +320,7 @@ class Box:
         n: int = len(xs)
 
         for i in range(n):
-            if i != h or h is None:
+            if h is None or i != h:
                 xc += xs[i]
         return xc / len(x0.get_elements()[0])
 
