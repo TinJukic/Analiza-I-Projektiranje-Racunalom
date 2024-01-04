@@ -131,10 +131,16 @@ class Box:
             for i in range(n):
                 # random values store in matrix x
                 r = random.random()
-                x.set_element_at(
-                    position=(0, i),
-                    element=self.__explicit_values[0] + r * (self.__explicit_values[0] + self.__explicit_values[1])
-                )
+                if len(x.get_elements()) == 0:
+                    x.set_element_at(
+                        position=(0, i),
+                        element=self.__explicit_values[0] + r * (self.__explicit_values[0] + self.__explicit_values[1]),
+                        N=1
+                    )
+                else:
+                    x.get_elements()[0].append(
+                        self.__explicit_values[0] + r * (self.__explicit_values[0] + self.__explicit_values[1])
+                    )
 
             X.append(x)
 
@@ -144,10 +150,12 @@ class Box:
             # calculate new centroid using all points
             xc = Box.__find_centroid(x0=self.__x0, xs=X, h=None)
 
-        num_of_iters: int = 1  # to prevent infinite loop
+        num_of_iters: int = 0  # to prevent infinite loop
         diverges: int = 0  # to prevent divergence
 
         while num_of_iters < self.__max_num_of_iters + 1:
+            num_of_iters += 1
+
             # find min and max element
             l = Box.__argmin(f=f, xs=X)
             h = Box.__argmax(f=f, xs=X)
