@@ -112,7 +112,7 @@ class Box:
         :return: found min of the function | *None* if min could not be found
         """
         xc: Matrica = Matrica(elements=self.__x0.get_elements())  # copy the starting point
-        X: list[Matrica] = [self.__x0]
+        X: list[Matrica] = []
 
         # first check initial boundaries (xc == x0)
         if not self.__check_implicit_boundaries(x=xc) or not self.__check_explicit_boundaries(x=xc):
@@ -120,44 +120,46 @@ class Box:
 
         n: int = len(self.__x0.get_elements()[0])
 
-        # defining l and h
-        h: int = -1
-        l: int = -1
+        # defining l and h parameters
+        l: int
+        h: int
 
-        for j in range(1, 2 * n + 1):
+        for j in range(2 * n):
             # create new empty matrix to store into X list
-            x: Matrica = Matrica()
+            x: Matrica = Matrica(elements=[[0 for _ in range(len(xc.get_elements()[0]))]])
 
             for i in range(n):
                 # random values store in matrix x
                 r = random.random()
-                if len(x.get_elements()) == 0:
-                    x.set_element_at(
-                        position=(0, i),
-                        element=self.__explicit_values[0] + r * (self.__explicit_values[0] + self.__explicit_values[1]),
-                        N=1
-                    )
-                else:
-                    x.get_elements()[0].append(
-                        self.__explicit_values[0] + r * (self.__explicit_values[0] + self.__explicit_values[1])
-                    )
+                x.set_element_at(
+                    position=(0, i),
+                    element=self.__explicit_values[0] + r * (self.__explicit_values[1] - self.__explicit_values[0]),
+                )
 
             X.append(x)
 
-            while not self.__check_implicit_boundaries(x=X[j]):
+            limit: int = 0  # to prevent infinite loop
+            while not self.__check_implicit_boundaries(x=X[j]) and limit < 10:
                 X[j] = Box.__move_to_centroid(x=X[j], xc=xc)
+                limit += 1
+
+            # find min and max element
+            l = Box.__argmin(f=f, xs=X)
+            h = Box.__argmax(f=f, xs=X)
 
             # calculate new centroid using all points
-            xc = Box.__find_centroid(x0=self.__x0, xs=X, h=None)
+            xc = Box.__find_centroid(xs=X, l=l, h=None)
 
         num_of_iters: int = 0  # to prevent infinite loop
         diverges: int = 0  # to prevent divergence
 
+        # find min and max element
+        l = Box.__argmin(f=f, xs=X)
+        h = Box.__argmax(f=f, xs=X)
+
         while num_of_iters < self.__max_num_of_iters + 1:
             num_of_iters += 1
 
-            # find min and max element
-            l = Box.__argmin(f=f, xs=X)
             h = Box.__argmax(f=f, xs=X)
             second_h: int = Box.__second_argmax(f=f, xs=X, h=h)
 
@@ -165,7 +167,7 @@ class Box:
             current_min: float = f(x=X[l])
 
             # calculate new centroid without xh point
-            xc = Box.__find_centroid(x0=self.__x0, xs=X, h=h)
+            xc = Box.__find_centroid(xs=X, l=l, h=h)
 
             # reflexion point
             xr: Matrica = Box.__reflexion(alpha=self.__alpha, xc=xc, xh=X[h])
@@ -175,22 +177,23 @@ class Box:
                 if xr.get_element_at(position=(0, i)) < self.__explicit_values[0]:
                     xr.set_element_at(position=(0, i), element=self.__explicit_values[0])
                 elif xr.get_element_at(position=(0, i)) > self.__explicit_values[1]:
-                    xr.set_element_at(position=(1, i), element=self.__explicit_values[1])
+                    xr.set_element_at(position=(0, i), element=self.__explicit_values[1])
 
             # check implicit boundaries for xr
-            while not self.__check_implicit_boundaries(x=xr):
+            limit: int = 0  # to prevent infinite loop
+            while not self.__check_implicit_boundaries(x=xr) and limit < 10:
                 xr = Box.__move_to_centroid(x=xr, xc=xc)
+                limit += 1
 
             # if xr is still the worse, update it once more
             if f(x=xr) > f(x=X[second_h]):
                 xr = Box.__move_to_centroid(x=xr, xc=xc)
 
             X[h] = xr
-            l = Box.__argmin(f=f, xs=X)  # calculate new min point
 
             if diverges == 10:
                 print(f"Problem diverges!")
-                return None
+                return X[l]
 
             result: float = 0.0
             for xi in X:
@@ -202,15 +205,14 @@ class Box:
                     result += element.get_element_at(position=(0, 0))
             result = math.sqrt(result / len(self.__x0.get_elements()[0]))
 
-            print(f"xc = {xc.get_elements()}, result = {result}")
-
             if result <= self.__e:
                 if print_progress:
                     print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
-                return (X[l] + X[h]) / 2  # (a + b) / 2
+                return X[l]
 
             # didn't return - diverges?
-            if f(x=X[l]) > current_min:
+            l = Box.__argmin(f=f, xs=X)  # calculate new min point
+            if f(x=X[l]) >= current_min:
                 diverges += 1
 
     def __check_implicit_boundaries(self, x: Matrica) -> bool:
@@ -245,15 +247,7 @@ class Box:
         :param xc: centroid point
         :return: moved point to centroid point
         """
-        new_x: Matrica = Matrica()
-
-        for i in range(len(x.get_elements()[0])):  # n
-            new_x.set_element_at(
-                position=(0, i),
-                element=0.5 * (x.get_element_at(position=(0, i)) + xc.get_element_at(position=(0, i)))
-            )
-
-        return new_x
+        return (x + xc) * 0.5
 
     @staticmethod
     def __argmin(f, xs: list[Matrica]) -> int:
@@ -308,29 +302,31 @@ class Box:
         for i in range(len(x_function_call) - 1):
             if i == h:
                 continue
-            if x_function_call[i] > x_function_call[argmax]:
+            if x_function_call[argmax] < x_function_call[i] != x_function_call[h]:
                 argmax = i
             for j in range(i + 1, len(x_function_call)):
-                if x_function_call[j] > x_function_call[argmax]:
+                if j == h:
+                    continue
+                if x_function_call[argmax] < x_function_call[j] != x_function_call[h]:
                     argmax = j
-        return argmax
+        return argmax if argmax != h else (argmax + 1) % len(xs)
 
     @staticmethod
-    def __find_centroid(x0: Matrica, xs: list[Matrica], h: int | None) -> Matrica:
+    def __find_centroid(xs: list[Matrica], l: int, h: int | None) -> Matrica:
         """
         Finds the centroid.
-        :param x0: starting point
         :param xs: list of vectors
+        :param l: argmin value
         :param h: argmax value | None if it should not be used
         :return: found centroid
         """
-        xc: Matrica = Matrica(elements=[[0 for _ in range(len(xs[0].get_elements()[0]))]])
+        xc: Matrica = Matrica(elements=xs[l].get_elements())
         n: int = len(xs)
 
         for i in range(n):
             if h is None or i != h:
                 xc += xs[i]
-        return xc / len(x0.get_elements()[0])
+        return xc / n
 
     @staticmethod
     def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:
