@@ -7,7 +7,6 @@ import math
 import random
 
 from Matrica import Matrica
-import sys
 
 
 class Funkcije:
@@ -56,7 +55,7 @@ class Ogranicenja:
             for e in element:
                 if e < -100 or e > 100:
                     return False
-        return True
+        return True  # [-100, 100]
 
     @staticmethod
     def implicit_3_1(x: Matrica) -> bool:
@@ -138,28 +137,23 @@ class Box:
 
             X.append(x)
 
-            limit: int = 0  # to prevent infinite loop
-            while not self.__check_implicit_boundaries(x=X[j]) and limit < 10:
+            limit: int = 100  # to prevent infinite loop
+            while not self.__check_implicit_boundaries(x=X[j]) and limit > 0:
                 X[j] = Box.__move_to_centroid(x=X[j], xc=xc)
-                limit += 1
-
-            # find min and max element
-            l = Box.__argmin(f=f, xs=X)
-            h = Box.__argmax(f=f, xs=X)
+                limit -= 1
 
             # calculate new centroid using all points
-            xc = Box.__find_centroid(xs=X, l=l, h=None)
+            xc = Box.__find_centroid(xs=X, j=j)
 
         num_of_iters: int = 0  # to prevent infinite loop
         diverges: int = 0  # to prevent divergence
-
-        # find min and max element
-        l = Box.__argmin(f=f, xs=X)
-        h = Box.__argmax(f=f, xs=X)
+        prev_result: float = 0.0  # result of the previous iteration
 
         while num_of_iters < self.__max_num_of_iters + 1:
             num_of_iters += 1
 
+            # find min and max element
+            l = Box.__argmin(f=f, xs=X)
             h = Box.__argmax(f=f, xs=X)
             second_h: int = Box.__second_argmax(f=f, xs=X, h=h)
 
@@ -167,7 +161,7 @@ class Box:
             current_min: float = f(x=X[l])
 
             # calculate new centroid without xh point
-            xc = Box.__find_centroid(xs=X, l=l, h=h)
+            xc = Box.__find_centroid(xs=X, h=h)
 
             # reflexion point
             xr: Matrica = Box.__reflexion(alpha=self.__alpha, xc=xc, xh=X[h])
@@ -180,10 +174,10 @@ class Box:
                     xr.set_element_at(position=(0, i), element=self.__explicit_values[1])
 
             # check implicit boundaries for xr
-            limit: int = 0  # to prevent infinite loop
-            while not self.__check_implicit_boundaries(x=xr) and limit < 10:
+            limit: int = 100  # to prevent infinite loop
+            while not self.__check_implicit_boundaries(x=xr) and limit > 0:
                 xr = Box.__move_to_centroid(x=xr, xc=xc)
-                limit += 1
+                limit -= 1
 
             # if xr is still the worse, update it once more
             if f(x=xr) > f(x=X[second_h]):
@@ -191,9 +185,10 @@ class Box:
 
             X[h] = xr
 
-            if diverges == 10:
+            if diverges == 100:
                 print(f"Problem diverges!")
-                return X[l]
+                print(f"Expected min: (1, 1), f_min = {f(x=Matrica(elements=[[1, 1]]))}")
+                return (X[l] + X[h]) / 2
 
             result: float = 0.0
             for xi in X:
@@ -203,17 +198,24 @@ class Box:
                 else:
                     element: Matrica
                     result += element.get_element_at(position=(0, 0))
-            result = math.sqrt(result / len(self.__x0.get_elements()[0]))
+            result = math.sqrt(result / 2)
 
-            if result <= self.__e:
+            print(f"X[l] = {X[l].get_elements()}, result = {result}")
+
+            if result < self.__e:
                 if print_progress:
                     print(f"Number of iterations for Nelder-Meadu algorithm is {num_of_iters}.")
-                return X[l]
+                return (X[l] + X[h]) / 2
 
             # didn't return - diverges?
             l = Box.__argmin(f=f, xs=X)  # calculate new min point
-            if f(x=X[l]) >= current_min:
+            if f(x=X[l]) >= current_min or abs(prev_result - result) < self.__e:
                 diverges += 1
+            else:
+                diverges = 0
+
+            # set result as new previous result for next iteration
+            prev_result = result
 
     def __check_implicit_boundaries(self, x: Matrica) -> bool:
         """
@@ -247,7 +249,7 @@ class Box:
         :param xc: centroid point
         :return: moved point to centroid point
         """
-        return (x + xc) * 0.5
+        return (x + xc) / 2
 
     @staticmethod
     def __argmin(f, xs: list[Matrica]) -> int:
@@ -312,21 +314,21 @@ class Box:
         return argmax if argmax != h else (argmax + 1) % len(xs)
 
     @staticmethod
-    def __find_centroid(xs: list[Matrica], l: int, h: int | None) -> Matrica:
+    def __find_centroid(xs: list[Matrica], j: int | None = None, h: int | None = None) -> Matrica:
         """
         Finds the centroid.
         :param xs: list of vectors
-        :param l: argmin value
+        :param j: upper limit | None if the limit is n
         :param h: argmax value | None if it should not be used
         :return: found centroid
         """
-        xc: Matrica = Matrica(elements=xs[l].get_elements())
-        n: int = len(xs)
+        xc: Matrica = Matrica(elements=[[0 for _ in range(len(xs[0].get_elements()[0]))]])
+        n: int = j if j is not None else len(xs)
 
         for i in range(n):
             if h is None or i != h:
                 xc += xs[i]
-        return xc / n
+        return xc / n if h is not None else xc / 2
 
     @staticmethod
     def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:
@@ -338,157 +340,3 @@ class Box:
         :return: reflexion point
         """
         return xc * (1 + alpha) - xh * alpha
-
-
-class ZlatniRez:
-    """
-    Golden section class with all necessary functionality implemented.
-    """
-
-    def __init__(self, x0: float = None, h: float = None, f=None, a: float = None, b: float = None, e: float = 10e-6):
-        """
-        *ZlatniRez* constructor.
-        :param x0: starting point of the uni-modal interval
-        :param h: shift of an interval
-        :param f: function of an interval
-        :param e: precision
-        :param a: lower boundary of the uni-modal interval
-        :param b: upper boundary of the uni-modal interval
-        :param e: precision
-        :raise Exception: if neither x0 nor a and b are set
-        """
-        while x0 is None and a is None and b is None:
-            print(f"None of the arguments were given. Please provide them.")
-            user_selection: str
-            user_selection = input(f"x0=")
-            if user_selection != '\n':
-                x0 = float(user_selection)
-
-            user_selection = input(f"a=")
-            if user_selection != '\n':
-                a = float(user_selection)
-                b = float(input(f"b="))
-
-            user_selection = input(f"e=")
-            if user_selection != '\n':
-                e = float(user_selection)
-
-        self.__e: float = e
-        self.__interval: Matrica
-        self.__k: float
-
-        if x0 is not None:
-            self.__interval = ZlatniRez.find_uni_modal_interval(x0=x0, h=0.1, f=f)
-            self.__k = 0.5 * (math.sqrt(5) - 1)
-        else:
-            self.__interval = Matrica([[a, b]])
-
-    @classmethod
-    def create_uni_modal_interval(cls, x0: float, h: float, f, e: float):
-        """
-        Creates *ZlatniRez* class with starting point of an interval.
-        :param x0: starting point of an interval
-        :param h: shift of an interval
-        :param f: function of an interval
-        :param e: precision
-        :return: new *ZlatniRez* object
-        """
-        ...
-
-    @staticmethod
-    def load_from_file(file: str) -> ZlatniRez | None:
-        """
-        Loads data for *ZlatniRez* class from file.
-        :param file: file from which the data is loaded
-        :return: new *ZlatniRez* if the file exists | *None* if the file does not exist or sent values are incorrect
-        """
-        try:
-            with open(file, 'r', encoding='utf-8') as file_golden_section:
-                lines: list[str] = file_golden_section.readline().strip().split()
-                if len(lines) == 2:
-                    # x0, e
-                    return ZlatniRez(x0=float(lines[0]), h=1, e=float(lines[1]))
-                elif len(lines) == 3:
-                    # a, b, e
-                    return ZlatniRez(a=float(lines[0]), b=float(lines[1]), e=float(lines[2]))
-                else:
-                    sys.stderr.write(f"You gave the program too many elements as input! Input should be either 'x0' and"
-                                     f"'e' or points 'a', 'b' and precision 'e'.\n")
-                    return None
-        except FileNotFoundError:
-            sys.stderr.write(f"Provided file does not exist!\n")
-            return None
-
-    def golden_section(self, f, print_progress: bool = False) -> tuple[Matrica, int]:
-        """
-        Calculates golden section from the interval of this class.
-        :param f: function to be used in golden section calculation
-        :param print_progress: tells the program whether the progress should be printed or not
-        :return: calculated golden section
-        """
-        num_of_iters: int = 0
-
-        a, b = self.__interval.get_elements()[0]
-        c, d = b - self.__k * (b - a), a + self.__k * (b - a)
-        fc, fd = f(c), f(d)
-
-        while (b - a) > self.__e:
-            num_of_iters += 1
-
-            # if print_progress:
-            #     print(f"a = {a}, b = {b}, c = {c}, d = {d}, fc = {fc}, fd = {fd}")
-
-            if fc < fd:
-                b, d = d, c
-                c = b - self.__k * (b - a)
-                fd, fc = fc, f(c)
-            else:
-                a, c = c, d
-                d = a + self.__k * (b - a)
-                fc, fd = fd, f(d)
-
-        if print_progress:
-            print(f"Number of iterations for golden_section is {num_of_iters}.")
-
-        return Matrica([[a, b]]), num_of_iters
-
-    @staticmethod
-    def find_uni_modal_interval(x0: float, h: float, f, print_progress: bool = False) -> Matrica:
-        """
-        Finds a uni-modal interval using starting point, shift and interval function.
-        :param x0: starting point of a uni-modal interval
-        :param h: shift of a uni-modal interval
-        :param f: function of a uni-modal interval
-        :param print_progress: tells the program whether the progress should be printed or not
-        :return: uni-modal interval as a new *Matrica* object
-        """
-        l: float = x0 - h
-        r: float = x0 + h
-        m: float = x0
-        fm: float
-        fl: float
-        fr: float
-        step: int = 1
-
-        fm, fl, fr = f(x0), f(l), f(r)
-
-        if fm > fr:
-            while fm > fr:
-                if print_progress:
-                    print(f"l = {l}, r = {r}, m = {m}, fm = {fm}, fl = {fl}, fr = {fr}, step = {step}")
-
-                l, m, fm = m, r, fr
-                step *= 2
-                r = x0 + h * step
-                fr = f(r)
-        elif fm > fl:
-            while fm > fl:
-                if print_progress:
-                    print(f"l = {l}, r = {r}, m = {m}, fm = {fm}, fl = {fl}, fr = {fr}, step = {step}")
-
-                r, m, fm = m, l, fl
-                step *= 2
-                l = x0 - h * step
-                fl = f(l)
-
-        return Matrica([[l, r]])

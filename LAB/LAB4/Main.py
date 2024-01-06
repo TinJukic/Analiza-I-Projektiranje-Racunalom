@@ -22,18 +22,18 @@ def zad1() -> None:
     else:
         print("Result is None!")
 
-    print(f"\n\nF2")
-    box: Box = Box(
-        x0=Matrica(elements=[[0.1, 0.3]]),
-        implicit=[Ogranicenja.implicit_1_1, Ogranicenja.implicit_1_2],
-        explicit=[Ogranicenja.explicit_1_1],
-        explicit_values=[-100, 100]
-    )
-    result: Matrica | None = box.calculate(f=Funkcije.f2)
-    if result is not None:
-        result.print_matrix()
-    else:
-        print("Result is None!")
+    # print(f"\n\nF2")
+    # box: Box = Box(
+    #     x0=Matrica(elements=[[0.1, 0.3]]),
+    #     implicit=[Ogranicenja.implicit_1_1, Ogranicenja.implicit_1_2],
+    #     explicit=[Ogranicenja.explicit_1_1],
+    #     explicit_values=[-100, 100]
+    # )
+    # result: Matrica | None = box.calculate(f=Funkcije.f2)
+    # if result is not None:
+    #     result.print_matrix()
+    # else:
+    #     print("Result is None!")
 
 
 def zad2() -> None:
