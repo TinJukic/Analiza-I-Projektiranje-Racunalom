@@ -135,10 +135,10 @@ class Box:
         for j in range(2 * n):
             # create new empty matrix to store into X list
             x: Matrica = Matrica(elements=[[0 for _ in range(len(xc.get_elements()[0]))]])
+            r = random.random()
 
             for i in range(n):
                 # random values store in matrix x
-                r = random.random()
                 x.set_element_at(
                     position=(0, i),
                     element=self.__explicit_values[0] + r * (self.__explicit_values[1] - self.__explicit_values[0]),
@@ -147,12 +147,13 @@ class Box:
             X.append(x)
 
             limit: int = 100  # to prevent infinite loop
-            while not self.__check_implicit_boundaries(x=X[j]) and limit > 0:
+            while ((not self.__check_explicit_boundaries(x=X[j]) or not self.__check_implicit_boundaries(x=X[j]))
+                   and limit > 0):
                 X[j] = Box.__move_to_centroid(x=X[j], xc=xc)
                 limit -= 1
 
             # calculate new centroid using all points
-            xc = Box.__find_centroid(xs=X, j=j)
+            xc = Box.__find_centroid(xs=X, j=j+1, h=Box.__argmax(f=f, xs=X))
 
         num_of_iters: int = 0  # to prevent infinite loop
         diverges: int = 0  # to prevent divergence
@@ -165,9 +166,6 @@ class Box:
             l = Box.__argmin(f=f, xs=X)
             h = Box.__argmax(f=f, xs=X)
             second_h: int = Box.__second_argmax(f=f, xs=X, h=h)
-
-            # find current min of the function
-            current_min: float = f(x=X[l])
 
             # calculate new centroid without xh point
             xc = Box.__find_centroid(xs=X, h=h)
@@ -216,8 +214,7 @@ class Box:
                 return (X[l] + X[h]) / 2
 
             # didn't return - diverges?
-            l = Box.__argmin(f=f, xs=X)  # calculate new min point
-            if f(x=X[l]) >= current_min or abs(prev_result - result) > self.__e:
+            if abs(prev_result - result) < self.__e:
                 diverges += 1
             else:
                 # does not diverge -> reset
