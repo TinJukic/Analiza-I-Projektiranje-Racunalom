@@ -334,7 +334,7 @@ class Box:
         for i in range(n):
             if h is None or i != h:
                 xc += xs[i]
-        return xc / n if h is not None else xc / 2
+        return xc / (n - 1) if n > 1 else xc / n
 
     @staticmethod
     def __reflexion(alpha: float, xc: Matrica, xh: Matrica) -> Matrica:
