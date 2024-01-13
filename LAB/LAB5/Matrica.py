@@ -382,6 +382,24 @@ class Matrica:
         self.set_elements(elements=power_matrix.get_elements())
         return self
 
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the matrix class.
+        :return: matrix class string representation
+        """
+        string_representation: str = ""
+
+        for element in self.__elements:
+            n: int = len(element)
+
+            for i, value in enumerate(element, start=1):
+                if i < n:
+                    string_representation += str(value) + "\t"
+                else:
+                    string_representation += str(value) + "\n"
+
+        return string_representation
+
     def sqrt(self) -> Matrica:
         """
         Finds square root of the vector (does not work for matrices).
