@@ -22,48 +22,6 @@ class Funkcije:
         return Matrica(elements=[[x1, x2]])
 
 
-class Ogranicenja:
-    """
-    Contains all boundaries needed for the *Box* algorithm.
-    """
-
-    @staticmethod
-    def implicit_1_1(x: Matrica) -> bool:
-        return x.get_element_at(position=(0, 1)) - x.get_element_at(position=(0, 0)) >= 0
-
-    @staticmethod
-    def implicit_1_2(x: Matrica) -> bool:
-        return 2 - x.get_element_at(position=(0, 0)) >= 0
-
-    @staticmethod
-    def explicit_1_1(x: Matrica) -> bool:
-        for element in x.get_elements():
-            for e in element:
-                if e < -100 or e > 100:
-                    return False
-        return True  # [-100, 100]
-
-    @staticmethod
-    def implicit_2_1(x: Matrica) -> float:
-        return x.get_element_at(position=(0, 1)) - x.get_element_at(position=(0, 0))
-
-    @staticmethod
-    def implicit_2_2(x: Matrica) -> float:
-        return 2 - x.get_element_at(position=(0, 0))
-
-    @staticmethod
-    def implicit_3_1(x: Matrica) -> float:
-        return 3 - x.get_element_at(position=(0, 0)) - x.get_element_at(position=(0, 1))
-
-    @staticmethod
-    def implicit_3_2(x: Matrica) -> float:
-        return 3 + 1.5 * x.get_element_at(position=(0, 0)) - x.get_element_at(position=(0, 1))
-
-    @staticmethod
-    def explicit_3_1(x: Matrica) -> float:
-        return x.get_element_at(position=(0, 1)) - 1
-
-
 class Loader:
     """
     Class which loads all parameters from file.
@@ -222,8 +180,7 @@ class Euler:
                 real_result.append(xk)
                 x_real = xk
 
-            xk = Euler.__calculate_next_point(A=A, B=B, xk=x, r=r)
-            x += (xk * T)
+            x += (Euler.__calculate_next_point(A=A, B=B, xk=x, r=r) * T)
             result.append(x)
 
         if f_real is not None:
