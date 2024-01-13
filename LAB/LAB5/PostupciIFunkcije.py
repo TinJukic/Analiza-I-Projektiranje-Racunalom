@@ -172,13 +172,10 @@ class Euler:
         real_result: list[Matrica] = []
 
         x: Matrica = Matrica(elements=x0.get_elements())
-        x_real: Matrica = Matrica(elements=x0.get_elements())
 
         for t in numpy.linspace(0, t_max, int(t_max / T)):
             if f_real is not None:
-                xk = Euler.__calculate_real_next_point(xk=x_real, f_real=f_real, T=T, t=t)
-                real_result.append(xk)
-                x_real = xk
+                real_result.append(Euler.__calculate_real_next_point(xk=x0, f_real=f_real, T=T, t=t))
 
             x += (Euler.__calculate_next_point(A=A, B=B, xk=x, r=r) * T)
             result.append(x)
@@ -186,16 +183,10 @@ class Euler:
         if f_real is not None:
             error: float = 0.0  # error at each time point
             for i in range(len(result)):
-                calculated_point: Matrica = result[i]
-                real_point: Matrica = real_result[i]
-                error += abs(math.sqrt(math.pow(
-                    calculated_point.get_element_at(position=(0, 0)) - real_point.get_element_at(position=(0, 0)), 2
-                ) + math.pow(
-                    calculated_point.get_element_at(position=(0, 1)) - real_point.get_element_at(position=(0, 1)), 2
-                )))
-            print(f"Error: {error}")
-
-        Drawer.draw_using(data=real_result, title=f"Euler - real solution", t_max=t_max, T=T)
+                for r in abs(result[i] - real_result[i]).get_elements()[0]:
+                    error += r
+            print(f"Error: {error / len(result)}")
+            Drawer.draw_using(data=real_result, title=f"Euler - real solution", t_max=t_max, T=T)
 
         return result
 
