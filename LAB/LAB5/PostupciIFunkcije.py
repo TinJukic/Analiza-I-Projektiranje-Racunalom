@@ -156,7 +156,8 @@ class Euler:
             T: float,
             t_max: int,
             r: Matrica | None = None,
-            update_r: bool = False
+            update_r: bool = False,
+            print_after: int = 100
     ) -> list[Matrica]:
         """
         Euler's method.
@@ -168,12 +169,14 @@ class Euler:
         :param t_max: time interval upper limit -> [0, t_max]
         :param r: matrix used to calculate new points
         :param update_r: determines whether r value should be updated or not
+        :param print_after: after how many iterations to print current solution
         :return: list of calculated matrices
         """
         result: list[Matrica] = []
         real_result: list[Matrica] = []
 
         x: Matrica = Matrica(elements=x0.get_elements())
+        current_print_after: int = 0
 
         for t in numpy.linspace(0, t_max, int(t_max / T)):
             if f_real is not None:
@@ -187,6 +190,10 @@ class Euler:
 
             x += (Euler.__calculate_next_point(A=A, B=B, xk=x, r=r) * T)
             result.append(x)
+
+            if current_print_after % print_after == 0:
+                print(f"[{x.get_element_at(position=(0, 0))}, {x.get_element_at(position=(0, 1))}]")
+            current_print_after += 1
 
         if f_real is not None:
             error: float = 0.0  # error at each time point
@@ -230,14 +237,15 @@ class ReversedEuler:
 
     @staticmethod
     def calculate(
-        A: Matrica,
-        B: Matrica | None,
-        x0: Matrica,
-        f_real: any,
-        T: float,
-        t_max: int,
-        r: Matrica | None = None,
-        update_r: bool = False
+            A: Matrica,
+            B: Matrica | None,
+            x0: Matrica,
+            f_real: any,
+            T: float,
+            t_max: int,
+            r: Matrica | None = None,
+            update_r: bool = False,
+            print_after: int = 100
     ) -> list[Matrica]:
         """
         Reversed Euler's method.
@@ -249,12 +257,14 @@ class ReversedEuler:
         :param t_max: time interval upper limit -> [0, t_max]
         :param r: matrix used to calculate new points
         :param update_r: determines whether r value should be updated or not
+        :param print_after: after how many iterations to print current solution
         :return: list of calculated matrices
         """
         result: list[Matrica] = []
         real_result: list[Matrica] = []
 
         x: Matrica = Matrica(elements=x0.get_elements())
+        current_print_after: int = 0
 
         for t in numpy.linspace(0, t_max, int(t_max / T)):
             if f_real is not None:
@@ -268,6 +278,10 @@ class ReversedEuler:
 
             x = ReversedEuler.__calculate_next_point(A=A, B=B, xk=x, T=T, r=r)
             result.append(x)
+
+            if current_print_after % print_after == 0:
+                print(f"[{x.get_element_at(position=(0, 0))}, {x.get_element_at(position=(0, 1))}]")
+            current_print_after += 1
 
         if f_real is not None:
             error: float = 0.0  # error at each time point
@@ -314,14 +328,15 @@ class Trapeze:
 
     @staticmethod
     def calculate(
-        A: Matrica,
-        B: Matrica | None,
-        x0: Matrica,
-        f_real: any,
-        T: float,
-        t_max: int,
-        r: Matrica | None = None,
-        update_r: bool = False
+            A: Matrica,
+            B: Matrica | None,
+            x0: Matrica,
+            f_real: any,
+            T: float,
+            t_max: int,
+            r: Matrica | None = None,
+            update_r: bool = False,
+            print_after: int = 100
     ) -> list[Matrica]:
         """
         Trapeze method.
@@ -333,12 +348,14 @@ class Trapeze:
         :param t_max: time interval upper limit -> [0, t_max]
         :param r: matrix used to calculate new points
         :param update_r: determines whether r value should be updated or not
+        :param print_after: after how many iterations to print current solution
         :return: list of calculated matrices
         """
         result: list[Matrica] = []
         real_result: list[Matrica] = []
 
         x: Matrica = Matrica(elements=x0.get_elements())
+        current_print_after: int = 0
 
         for t in numpy.linspace(0, t_max, int(t_max / T)):
             if f_real is not None:
@@ -352,6 +369,10 @@ class Trapeze:
 
             x = Trapeze.__calculate_next_point(A=A, B=B, xk=x, T=T, r=r)
             result.append(x)
+
+            if current_print_after % print_after == 0:
+                print(f"[{x.get_element_at(position=(0, 0))}, {x.get_element_at(position=(0, 1))}]")
+            current_print_after += 1
 
         if f_real is not None:
             error: float = 0.0  # error at each time point
@@ -399,14 +420,15 @@ class RungeKutta:
 
     @staticmethod
     def calculate(
-        A: Matrica,
-        B: Matrica | None,
-        x0: Matrica,
-        f_real: any,
-        T: float,
-        t_max: int,
-        r: Matrica | None = None,
-        update_r: bool = False
+            A: Matrica,
+            B: Matrica | None,
+            x0: Matrica,
+            f_real: any,
+            T: float,
+            t_max: int,
+            r: Matrica | None = None,
+            update_r: bool = False,
+            print_after: int = 100
     ) -> list[Matrica]:
         """
         Runge-Kutta 4th order method.
@@ -418,12 +440,14 @@ class RungeKutta:
         :param t_max: time interval upper limit -> [0, t_max]
         :param r: matrix used to calculate new points
         :param update_r: determines whether r value should be updated or not
+        :param print_after: after how many iterations to print current solution
         :return: list of calculated matrices
         """
         result: list[Matrica] = []
         real_result: list[Matrica] = []
 
         x: Matrica = Matrica(elements=x0.get_elements())
+        current_print_after: int = 0
 
         for t in numpy.linspace(0, t_max, int(t_max / T)):
             if f_real is not None:
@@ -437,6 +461,10 @@ class RungeKutta:
 
             x = RungeKutta.__calculate_next_point(A=A, B=B, xk=x, T=T, r=r)
             result.append(x)
+
+            if current_print_after % print_after == 0:
+                print(f"[{x.get_element_at(position=(0, 0))}, {x.get_element_at(position=(0, 1))}]")
+            current_print_after += 1
 
         if f_real is not None:
             error: float = 0.0  # error at each time point
@@ -536,3 +564,13 @@ class RungeKutta:
         x: Matrica = (xk + RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * T) * A
 
         return x if B is None else x + B * new_r
+
+
+class PECE2:
+    """
+    Prediktorsko korektorski postupak (Euler + reversed Euler).
+    """
+
+    @staticmethod
+    def calculate():
+        ...
