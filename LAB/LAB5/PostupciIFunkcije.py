@@ -374,9 +374,10 @@ class Trapeze:
         :return: calculated next point
         """
         identity_matrix: Matrica = Matrica.identity_matrix(dimension=A.get_matrix_dimension())
-        R: Matrica = ~(identity_matrix - A * T / 2) * (identity_matrix + A * T / 2)
+        R: Matrica = (identity_matrix + A * T / 2) * ~(identity_matrix - A * T / 2)
+        other_r: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
 
-        return xk * R if B is None else xk * R + ~(identity_matrix - A * T / 2) * T / 2 * B * (r + r * T)
+        return xk * R if B is None else xk * R + ~(identity_matrix - A * T / 2) * T / 2 * B * (r + other_r)
 
     @staticmethod
     def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
@@ -389,3 +390,149 @@ class Trapeze:
         :return: calculated next real point
         """
         return xk + f_real(x=xk, t=t) * T
+
+
+class RungeKutta:
+    """
+    Runge-Kutta 4th order method class.
+    """
+
+    @staticmethod
+    def calculate(
+        A: Matrica,
+        B: Matrica | None,
+        x0: Matrica,
+        f_real: any,
+        T: float,
+        t_max: int,
+        r: Matrica | None = None,
+        update_r: bool = False
+    ) -> list[Matrica]:
+        """
+        Runge-Kutta 4th order method.
+        :param A: matrix of the function
+        :param B: matrix of the function
+        :param x0: starting point at t=0
+        :param f_real: real function used to calculate real new points | None if it should not be used
+        :param T: integration step
+        :param t_max: time interval upper limit -> [0, t_max]
+        :param r: matrix used to calculate new points
+        :param update_r: determines whether r value should be updated or not
+        :return: list of calculated matrices
+        """
+        result: list[Matrica] = []
+        real_result: list[Matrica] = []
+
+        x: Matrica = Matrica(elements=x0.get_elements())
+
+        for t in numpy.linspace(0, t_max, int(t_max / T)):
+            if f_real is not None:
+                real_result.append(RungeKutta.__calculate_real_next_point(xk=x0, f_real=f_real, T=T, t=t))
+
+            if update_r and r is not None:
+                for i in range(len(r.get_elements()[0])):
+                    r.set_element_at(position=(0, i), element=t)
+            else:
+                r = Matrica(elements=[[t, t]])
+
+            x = RungeKutta.__calculate_next_point(A=A, B=B, xk=x, T=T, r=r)
+            result.append(x)
+
+        if f_real is not None:
+            error: float = 0.0  # error at each time point
+            for i in range(len(result)):
+                for r in abs(result[i] - real_result[i]).get_elements()[0]:
+                    error += r
+            print(f"Error: {error / len(result)}")
+            Drawer.draw_using(data=real_result, title=f"Runge-Kutta - real solution", t_max=t_max, T=T)
+
+        return result
+
+    @staticmethod
+    def __calculate_next_point(A: Matrica, B: Matrica | None, xk: Matrica, T: float, r: Matrica | None) -> Matrica:
+        """
+        Method used to calculate the next point of the Runge-Kutta method.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: current point
+        :param T: integration step
+        :return: calculated next point
+        """
+        return xk + (
+                RungeKutta.__m1(A=A, B=B, xk=xk, r=r) +
+                RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * 2 +
+                RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * 2 +
+                RungeKutta.__m4(A=A, B=B, xk=xk, r=r, T=T) * 2
+        ) + T / 6
+
+    @staticmethod
+    def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
+        """
+        Method used to calculate the real next point of the Runge-Kutta method.
+        :param xk: current point
+        :param f_real: function used to calculate real new points
+        :param T: integration step
+        :param t: current time moment
+        :return: calculated next real point
+        """
+        return xk + f_real(x=xk, t=t) * T
+
+    @staticmethod
+    def __m1(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica) -> Matrica:
+        """
+        M1 function of the Runge-Kutta.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: current point
+        :param r: vector
+        :return: calculated point
+        """
+        return xk * A if B is None else xk * A + B * r
+
+    @staticmethod
+    def __m2(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
+        """
+        M2 function of the Runge-Kutta.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: current point
+        :param r: vector
+        :param T: integration step
+        :return: calculated point
+        """
+        new_r: Matrica = Matrica(elements=[[t + T / 2 for t in elements] for elements in r.get_elements()])
+        x: Matrica = (xk + RungeKutta.__m1(A=A, B=B, xk=xk, r=r) * T / 2) * A
+
+        return x if B is None else x + B * new_r
+
+    @staticmethod
+    def __m3(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
+        """
+        M3 function of the Runge-Kutta.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: current point
+        :param r: vector
+        :param T: integration step
+        :return: calculated point
+        """
+        new_r: Matrica = Matrica(elements=[[t + T / 2 for t in elements] for elements in r.get_elements()])
+        x: Matrica = (xk + RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * T / 2) * A
+
+        return x if B is None else x + B * new_r
+
+    @staticmethod
+    def __m4(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
+        """
+        M4 function of the Runge-Kutta.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: current point
+        :param r: vector
+        :param T: integration step
+        :return: calculated point
+        """
+        new_r: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
+        x: Matrica = (xk + RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * T) * A
+
+        return x if B is None else x + B * new_r

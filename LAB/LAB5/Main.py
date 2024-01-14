@@ -4,7 +4,7 @@
 from Matrica import Matrica
 from PostupciIFunkcije import Loader, Drawer
 from PostupciIFunkcije import Funkcije
-from PostupciIFunkcije import Euler, ReversedEuler, Trapeze
+from PostupciIFunkcije import Euler, ReversedEuler, Trapeze, RungeKutta
 
 
 def zad1() -> None:
@@ -33,12 +33,19 @@ def zad1() -> None:
     #     file=f"Matrice/zad1_rev_euler.txt", title=f"Reversed Euler - calculated solution", t_max=10, T=0.01
     # )
 
-    print(f"Trapeze:")
+    # print(f"Trapeze:")
+    # Loader.save_to(
+    #     file="Matrice/zad1_trapeze.txt",
+    #     data=Trapeze.calculate(A=A, B=None, x0=x, f_real=Funkcije.f1, T=0.01, t_max=10)
+    # )
+    # Drawer.draw_from(file=f"Matrice/zad1_trapeze.txt", title=f"Trapeze - calculated solution", t_max=10, T=0.01)
+
+    print(f"Runge-Kutta:")
     Loader.save_to(
-        file="Matrice/zad1_trapeze.txt",
-        data=Trapeze.calculate(A=A, B=None, x0=x, f_real=Funkcije.f1, T=0.01, t_max=10)
+        file="Matrice/zad1_runge_kutta.txt",
+        data=RungeKutta.calculate(A=A, B=None, x0=x, f_real=Funkcije.f1, T=0.01, t_max=10)
     )
-    Drawer.draw_from(file=f"Matrice/zad1_trapeze.txt", title=f"Trapeze - calculated solution", t_max=10, T=0.01)
+    Drawer.draw_from(file=f"Matrice/zad1_runge_kutta.txt", title=f"Runge-Kutta - calculated solution", t_max=10, T=0.01)
 
 
 def zad2() -> None:
@@ -65,12 +72,19 @@ def zad2() -> None:
     # )
     # Drawer.draw_from(file=f"Matrice/zad2_rev_euler.txt", title=f"Reversed Euler - calculated solution", t_max=1, T=0.1)
 
-    print(f"Trapeze:")
+    # print(f"Trapeze:")
+    # Loader.save_to(
+    #     file="Matrice/zad2_trapeze.txt",
+    #     data=Trapeze.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1)
+    # )
+    # Drawer.draw_from(file=f"Matrice/zad2_trapeze.txt", title=f"Trapeze - calculated solution", t_max=1, T=0.1)
+
+    print(f"Runge-Kutta:")
     Loader.save_to(
-        file="Matrice/zad2_trapeze.txt",
-        data=Trapeze.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1)
+        file="Matrice/zad2_runge_kutta.txt",
+        data=RungeKutta.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1)
     )
-    Drawer.draw_from(file=f"Matrice/zad2_trapeze.txt", title=f"Trapeze - calculated solution", t_max=1, T=0.1)
+    Drawer.draw_from(file=f"Matrice/zad2_runge_kutta.txt", title=f"Runge-Kutta - calculated solution", t_max=1, T=0.1)
 
 
 def zad3() -> None:
@@ -95,7 +109,7 @@ def zad3() -> None:
     print(f"Reversed Euler:")
     Loader.save_to(
         file="Matrice/zad3_rev_euler.txt",
-        data=Euler.calculate(A=A, B=None, x0=x, f_real=None, T=0.01, t_max=10, r=r)
+        data=ReversedEuler.calculate(A=A, B=None, x0=x, f_real=None, T=0.01, t_max=10, r=r)
     )
     Drawer.draw_from(
         file=f"Matrice/zad3_rev_euler.txt", title=f"Reversed Euler - calculated solution", t_max=10, T=0.01
@@ -104,9 +118,16 @@ def zad3() -> None:
     print(f"Trapeze:")
     Loader.save_to(
         file="Matrice/zad3_trapeze.txt",
-        data=Euler.calculate(A=A, B=None, x0=x, f_real=None, T=0.01, t_max=10, r=r)
+        data=Trapeze.calculate(A=A, B=None, x0=x, f_real=None, T=0.01, t_max=10, r=r)
     )
     Drawer.draw_from(file=f"Matrice/zad3_trapeze.txt", title=f"Trapeze - calculated solution", t_max=10, T=0.01)
+
+    print(f"Runge-Kutta:")
+    Loader.save_to(
+        file="Matrice/zad3_runge_kutta.txt",
+        data=RungeKutta.calculate(A=A, B=None, x0=x, f_real=None, T=0.01, t_max=10, r=r)
+    )
+    Drawer.draw_from(file=f"Matrice/zad3_runge_kutta.txt", title=f"Runge-Kutta - calculated solution", t_max=10, T=0.01)
 
 
 def zad4() -> None:
@@ -138,9 +159,16 @@ def zad4() -> None:
     print(f"Trapeze:")
     Loader.save_to(
         file="Matrice/zad4_trapeze.txt",
-        data=Euler.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1, r=r)
+        data=Trapeze.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1, r=r)
     )
     Drawer.draw_from(file=f"Matrice/zad4_trapeze.txt", title=f"Trapeze - calculated solution", t_max=1, T=0.1)
+
+    print(f"Runge-Kutta:")
+    Loader.save_to(
+        file="Matrice/zad4_runge_kutta.txt",
+        data=RungeKutta.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1, r=r)
+    )
+    Drawer.draw_from(file=f"Matrice/zad4_runge_kutta.txt", title=f"Runge-Kutta - calculated solution", t_max=1, T=0.1)
 
 
 def main() -> None:
