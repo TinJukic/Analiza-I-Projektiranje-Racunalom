@@ -221,3 +221,87 @@ class Euler:
         :return: calculated next real point
         """
         return xk + f_real(x=xk, t=t) * T
+
+
+class ReversedEuler:
+    """
+    Reverse Euler's method class.
+    """
+
+    @staticmethod
+    def calculate(
+            A: Matrica,
+            B: Matrica | None,
+            x0: Matrica,
+            f_real: any,
+            T: float,
+            t_max: int,
+            r: Matrica | None = None,
+            update_r: bool = False
+    ) -> list[Matrica]:
+        """
+        Reversed Euler's method.
+        :param A: matrix of the function
+        :param B: matrix of the function
+        :param x0: starting point at t=0
+        :param f_real: real function used to calculate real new points | None if it should not be used
+        :param T: integration step
+        :param t_max: time interval upper limit -> [0, t_max]
+        :param r: matrix used to calculate new points
+        :param update_r: determines whether r value should be updated or not
+        :return: list of calculated matrices
+        """
+        result: list[Matrica] = []
+        real_result: list[Matrica] = []
+
+        x: Matrica = Matrica(elements=x0.get_elements())
+
+        for t in numpy.linspace(0, t_max, int(t_max / T)):
+            if f_real is not None:
+                real_result.append(ReversedEuler.__calculate_real_next_point(xk=x0, f_real=f_real, T=T, t=t))
+
+            if update_r and r is not None:
+                for i in range(len(r.get_elements()[0])):
+                    r.set_element_at(position=(0, i), element=t)
+            else:
+                r = Matrica(elements=[[t, t]])
+
+            x = ReversedEuler.__calculate_next_point(A=A, B=B, xk=x, T=T, r=r)
+            result.append(x)
+
+        if f_real is not None:
+            error: float = 0.0  # error at each time point
+            for i in range(len(result)):
+                for r in abs(result[i] - real_result[i]).get_elements()[0]:
+                    error += r
+            print(f"Error: {error / len(result)}")
+            Drawer.draw_using(data=real_result, title=f"Reversed Euler - real solution", t_max=t_max, T=T)
+
+        return result
+
+    @staticmethod
+    def __calculate_next_point(A: Matrica, B: Matrica | None, xk: Matrica, T: float, r: Matrica | None) -> Matrica:
+        """
+        Method used to calculate the next point of the reversed Euler's method.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: next point
+        :param T: integration step
+        :return: calculated next point
+        """
+        identity_matrix: Matrica = Matrica.identity_matrix(dimension=A.get_matrix_dimension())
+        divider: Matrica = identity_matrix - A * T
+
+        return xk * ~divider if B is None else (xk + B * T * r) * ~divider
+
+    @staticmethod
+    def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
+        """
+        Method used to calculate the real next point of the reversed Euler's method.
+        :param xk: next point
+        :param f_real: function used to calculate real new points
+        :param T: integration step
+        :param t: current time moment
+        :return: calculated next real point
+        """
+        return xk + f_real(x=xk, t=t) * T
