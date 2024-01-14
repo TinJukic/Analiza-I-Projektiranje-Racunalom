@@ -46,14 +46,46 @@ def zad2() -> None:
 def zad3() -> None:
     print(f"ZAD3", end="\n\n")
 
+    # loading all required matrices
+    A: Matrica
+    B: Matrica
+    x: Matrica
+
+    # B matrix is not needed here
+    A, B, x = Loader.load_from(file=f"Matrice/zad3_matrice.txt")
+    r: Matrica = Matrica(elements=[[1, 1]])
+
+    print(f"Euler:")
+    Loader.save_to(
+        file="Matrice/zad3_euler.txt",
+        data=Euler.calculate(A=A, B=None, x0=x, f_real=None, T=0.01, t_max=10, r=r)
+    )
+    Drawer.draw_from(file=f"Matrice/zad3_euler.txt", title=f"Euler - calculated solution", t_max=10, T=0.01)
+
 
 def zad4() -> None:
     print(f"ZAD4", end="\n\n")
 
+    # loading all required matrices
+    A: Matrica
+    B: Matrica
+    x: Matrica
+
+    # B matrix is not needed here
+    A, B, x = Loader.load_from(file=f"Matrice/zad4_matrice.txt")
+    r: Matrica = Matrica(elements=[[1, 1]])
+
+    print(f"Euler:")
+    Loader.save_to(
+        file="Matrice/zad4_euler.txt",
+        data=Euler.calculate(A=A, B=None, x0=x, f_real=None, T=0.1, t_max=1, r=r)
+    )
+    Drawer.draw_from(file=f"Matrice/zad4_euler.txt", title=f"Euler - calculated solution", t_max=1, T=0.1)
+
 
 def main() -> None:
-    zad1()
-    # zad2()
+    # zad1()
+    zad2()
     # zad3()
     # zad4()
 

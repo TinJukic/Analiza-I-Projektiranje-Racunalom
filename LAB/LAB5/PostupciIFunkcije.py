@@ -155,7 +155,8 @@ class Euler:
             f_real: any,
             T: float,
             t_max: int,
-            r: Matrica | None = None
+            r: Matrica | None = None,
+            update_r: bool = False
     ) -> list[Matrica]:
         """
         Euler's method.
@@ -166,6 +167,7 @@ class Euler:
         :param T: integration step
         :param t_max: time interval upper limit -> [0, t_max]
         :param r: matrix used to calculate new points
+        :param update_r: determines whether r value should be updated or not
         :return: list of calculated matrices
         """
         result: list[Matrica] = []
@@ -176,6 +178,12 @@ class Euler:
         for t in numpy.linspace(0, t_max, int(t_max / T)):
             if f_real is not None:
                 real_result.append(Euler.__calculate_real_next_point(xk=x0, f_real=f_real, T=T, t=t))
+
+            if update_r and r is not None:
+                for i in range(len(r.get_elements()[0])):
+                    r.set_element_at(position=(0, i), element=t)
+            else:
+                r = Matrica(elements=[[t, t]])
 
             x += (Euler.__calculate_next_point(A=A, B=B, xk=x, r=r) * T)
             result.append(x)
