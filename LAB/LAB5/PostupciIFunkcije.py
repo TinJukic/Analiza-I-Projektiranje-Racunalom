@@ -306,7 +306,7 @@ class ReversedEuler:
         identity_matrix: Matrica = Matrica.identity_matrix(dimension=A.get_matrix_dimension())
         divider: Matrica = identity_matrix - A * T
 
-        return xk * ~divider if B is None else (xk + B * T * r) * ~divider
+        return xk * ~divider.inversion() if B is None else (xk + ~(B * T * ~r)) * ~divider.inversion()
 
     @staticmethod
     def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
@@ -395,10 +395,10 @@ class Trapeze:
         :return: calculated next point
         """
         identity_matrix: Matrica = Matrica.identity_matrix(dimension=A.get_matrix_dimension())
-        R: Matrica = (identity_matrix + A * T / 2) * ~(identity_matrix - A * T / 2)
+        R: Matrica = ~(identity_matrix + A * T / 2) * ~(identity_matrix - A * T / 2).inversion()
         other_r: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
 
-        return xk * R if B is None else xk * R + ~(identity_matrix - A * T / 2) * T / 2 * B * (r + other_r)
+        return xk * R if B is None else xk * R + ~((identity_matrix - A * T / 2) * T / 2 * B * ~(r + other_r))
 
     @staticmethod
     def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
@@ -486,12 +486,22 @@ class RungeKutta:
         :param T: integration step
         :return: calculated next point
         """
+        # defining needed r parameters
+        r_T: Matrica = Matrica(elements=[[t + T for t in element] for element in r.get_elements()])
+        r_T_2: Matrica = Matrica(elements=[[t + T / 2 for t in element] for element in r.get_elements()])
+
+        # defining needed functions
+        # m1: Matrica = RungeKutta.__m(A=A, B=B, xk=xk, r=r)
+        # m2: Matrica = RungeKutta.__m(A=A, B=B, xk=xk + m1 * T / 2, r=r_T_2)
+        # m3: Matrica = RungeKutta.__m(A=A, B=B, xk=xk + m2 * T / 2, r=r_T_2)
+        # m4: Matrica = RungeKutta.__m(A=A, B=B, xk=xk + m3 * T, r=r_T)
+
         return xk + (
                 RungeKutta.__m1(A=A, B=B, xk=xk, r=r) +
                 RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * 2 +
                 RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * 2 +
-                RungeKutta.__m4(A=A, B=B, xk=xk, r=r, T=T) * 2
-        ) + T / 6
+                RungeKutta.__m4(A=A, B=B, xk=xk, r=r, T=T)
+        ) * T / 6
 
     @staticmethod
     def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
@@ -506,6 +516,18 @@ class RungeKutta:
         return xk + f_real(x=xk, t=t) * T
 
     @staticmethod
+    def __m(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica) -> Matrica:
+        """
+        M function of the Runge-Kutta.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: current point
+        :param r: vector
+        :return: calculated point
+        """
+        return xk * A if B is None else xk * A + B * r
+
+    @staticmethod
     def __m1(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica) -> Matrica:
         """
         M1 function of the Runge-Kutta.
@@ -515,7 +537,7 @@ class RungeKutta:
         :param r: vector
         :return: calculated point
         """
-        return xk * A if B is None else xk * A + B * r
+        return xk * A if B is None else xk * A + ~(B * ~r)
 
     @staticmethod
     def __m2(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
@@ -531,7 +553,7 @@ class RungeKutta:
         new_r: Matrica = Matrica(elements=[[t + T / 2 for t in elements] for elements in r.get_elements()])
         x: Matrica = (xk + RungeKutta.__m1(A=A, B=B, xk=xk, r=r) * T / 2) * A
 
-        return x if B is None else x + B * new_r
+        return x if B is None else x + ~(B * ~new_r)
 
     @staticmethod
     def __m3(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
@@ -547,7 +569,7 @@ class RungeKutta:
         new_r: Matrica = Matrica(elements=[[t + T / 2 for t in elements] for elements in r.get_elements()])
         x: Matrica = (xk + RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * T / 2) * A
 
-        return x if B is None else x + B * new_r
+        return x if B is None else x + ~(B * ~new_r)
 
     @staticmethod
     def __m4(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
@@ -563,7 +585,7 @@ class RungeKutta:
         new_r: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
         x: Matrica = (xk + RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * T) * A
 
-        return x if B is None else x + B * new_r
+        return x if B is None else x + ~(B * ~new_r)
 
 
 class PECE2:
@@ -572,5 +594,227 @@ class PECE2:
     """
 
     @staticmethod
-    def calculate():
-        ...
+    def calculate(
+            A: Matrica,
+            B: Matrica | None,
+            x0: Matrica,
+            f_real: any,
+            T: float,
+            t_max: int,
+            r: Matrica | None = None,
+            update_r: bool = False,
+            print_after: int = 100
+    ) -> list[Matrica]:
+        """
+        PE(CE)^2 method with Euler as predictor and reversed Euler as corrector.
+        :param A: matrix of the function
+        :param B: matrix of the function
+        :param x0: starting point at t=0
+        :param f_real: real function used to calculate real new points | None if it should not be used
+        :param T: integration step
+        :param t_max: time interval upper limit -> [0, t_max]
+        :param r: matrix used to calculate new points
+        :param update_r: determines whether r value should be updated or not
+        :param print_after: after how many iterations to print current solution
+        :return: list of calculated matrices
+        """
+        result: list[Matrica] = []
+        real_result: list[Matrica] = []
+
+        x: Matrica = Matrica(elements=x0.get_elements())
+        current_print_after: int = 0
+
+        for t in numpy.linspace(0, t_max, int(t_max / T)):
+            if f_real is not None:
+                real_result.append(PECE2.__calculate_real_next_point(xk=x0, f_real=f_real, T=T, t=t))
+
+            if update_r and r is not None:
+                for i in range(len(r.get_elements()[0])):
+                    r.set_element_at(position=(0, i), element=t)
+            else:
+                r = Matrica(elements=[[t, t]])
+
+            r_T: Matrica | None = None
+            if r is not None:
+                r_T: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
+
+            # calculating next point using Euler and reversed Euler for two times
+            predicted_x: Matrica = x + PECE2.__predictor(A=A, B=B, x=x, T=T, r=r)
+            predicted_x = x + PECE2.__corrector(A=A, B=B, xk=predicted_x, T=T, r=r_T)
+            x += PECE2.__corrector(A=A, B=B, xk=predicted_x, T=T, r=r_T)
+            result.append(x)
+
+            if current_print_after % print_after == 0:
+                print(f"[{x.get_element_at(position=(0, 0))}, {x.get_element_at(position=(0, 1))}]")
+            current_print_after += 1
+
+        if f_real is not None:
+            error: float = 0.0  # error at each time point
+            for i in range(len(result)):
+                for r in abs(result[i] - real_result[i]).get_elements()[0]:
+                    error += r
+            print(f"Error: {error / len(result)}")
+            Drawer.draw_using(data=real_result, title=f"PE(CE)^2 - real solution", t_max=t_max, T=T)
+
+        return result
+
+    @staticmethod
+    def __predictor(A: Matrica, B: Matrica | None, x: Matrica, T: float, r: Matrica | None) -> Matrica:
+        """
+        Predictor method used to calculate the next point using Euler's method.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param x: current point
+        :param T: integration step
+        :param r: vector (optional)
+        :return: calculated next point
+        """
+        a: Matrica = A * ~x
+        return ~a * T if B is None else ~(a + B * ~r) * T
+
+    @staticmethod
+    def __corrector(A: Matrica, B: Matrica | None, xk: Matrica, T: float, r: Matrica | None) -> Matrica:
+        """
+        Method used to calculate the next point of the reversed Euler's method.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param xk: next point
+        :param T: integration step
+        :param r: vector (optional)
+        :return: calculated next point
+        """
+        a: Matrica = A * ~xk
+        return ~a * T if B is None else ~(a + B * ~r) * T
+
+    @staticmethod
+    def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
+        """
+        Method used to calculate the real next point of the PE(CE)^2 method.
+        :param xk: next point
+        :param f_real: function used to calculate real new points
+        :param T: integration step
+        :param t: current time moment
+        :return: calculated next real point
+        """
+        return xk + f_real(x=xk, t=t) * T
+
+
+class PECE:
+    """
+    Prediktorsko korektorski postupak (Euler + reversed Euler).
+    """
+
+    @staticmethod
+    def calculate(
+            A: Matrica,
+            B: Matrica | None,
+            x0: Matrica,
+            f_real: any,
+            T: float,
+            t_max: int,
+            r: Matrica | None = None,
+            update_r: bool = False,
+            print_after: int = 100
+    ) -> list[Matrica]:
+        """
+        PECE method with Euler as predictor and trapeze as corrector.
+        :param A: matrix of the function
+        :param B: matrix of the function
+        :param x0: starting point at t=0
+        :param f_real: real function used to calculate real new points | None if it should not be used
+        :param T: integration step
+        :param t_max: time interval upper limit -> [0, t_max]
+        :param r: matrix used to calculate new points
+        :param update_r: determines whether r value should be updated or not
+        :param print_after: after how many iterations to print current solution
+        :return: list of calculated matrices
+        """
+        result: list[Matrica] = []
+        real_result: list[Matrica] = []
+
+        x: Matrica = Matrica(elements=x0.get_elements())
+        current_print_after: int = 0
+
+        for t in numpy.linspace(0, t_max, int(t_max / T)):
+            if f_real is not None:
+                real_result.append(PECE.__calculate_real_next_point(xk=x0, f_real=f_real, T=T, t=t))
+
+            if update_r and r is not None:
+                for i in range(len(r.get_elements()[0])):
+                    r.set_element_at(position=(0, i), element=t)
+            else:
+                r = Matrica(elements=[[t, t]])
+
+            r_T: Matrica | None = None
+            if r is not None:
+                r_T: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
+
+            # calculating next point using Euler and trapeze
+            predicted_x: Matrica = x + PECE.__predictor(A=A, B=B, x=x, T=T, r=r)
+            x += PECE.__corrector(A=A, B=B, x=x, xk=predicted_x, T=T, r=r, r_T=r_T)
+            result.append(x)
+
+            if current_print_after % print_after == 0:
+                print(f"[{x.get_element_at(position=(0, 0))}, {x.get_element_at(position=(0, 1))}]")
+            current_print_after += 1
+
+        if f_real is not None:
+            error: float = 0.0  # error at each time point
+            for i in range(len(result)):
+                for r in abs(result[i] - real_result[i]).get_elements()[0]:
+                    error += r
+            print(f"Error: {error / len(result)}")
+            Drawer.draw_using(data=real_result, title=f"PECE - real solution", t_max=t_max, T=T)
+
+        return result
+
+    @staticmethod
+    def __predictor(A: Matrica, B: Matrica | None, x: Matrica, T: float, r: Matrica | None) -> Matrica:
+        """
+        Predictor method used to calculate the next point using Euler's method.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param x: current point
+        :param T: integration step
+        :param r: vector (optional)
+        :return: calculated next point
+        """
+        a: Matrica = A * ~x
+        return ~a * T if B is None else ~(a + B * ~r) * T
+
+    @staticmethod
+    def __corrector(
+            A: Matrica,
+            B: Matrica | None,
+            x: Matrica,
+            xk: Matrica,
+            T: float,
+            r: Matrica | None,
+            r_T: Matrica | None
+    ) -> Matrica:
+        """
+        Method used to calculate the next point of the trapeze method.
+        :param A: matrix of the function
+        :param B: matrix of the function (optional)
+        :param x: current point
+        :param xk: next point
+        :param T: integration step
+        :param r: current vector (optional)
+        :param r_T: next vector (optional)
+        :return: calculated next point
+        """
+        current_a: Matrica = A * ~x
+        next_a: Matrica = A * ~xk
+        return (~current_a + ~next_a) * T / 2 if B is None else ~(current_a + B * ~r + next_a + B * ~r_T) * T / 2
+
+    @staticmethod
+    def __calculate_real_next_point(xk: Matrica, f_real: any, T: float, t: int) -> Matrica:
+        """
+        Method used to calculate the real next point of the PECE method.
+        :param xk: next point
+        :param f_real: function used to calculate real new points
+        :param T: integration step
+        :param t: current time moment
+        :return: calculated next real point
+        """
+        return xk + f_real(x=xk, t=t) * T
