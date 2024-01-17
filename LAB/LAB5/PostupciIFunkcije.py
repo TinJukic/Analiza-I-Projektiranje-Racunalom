@@ -486,21 +486,11 @@ class RungeKutta:
         :param T: integration step
         :return: calculated next point
         """
-        # defining needed r parameters
-        r_T: Matrica = Matrica(elements=[[t + T for t in element] for element in r.get_elements()])
-        r_T_2: Matrica = Matrica(elements=[[t + T / 2 for t in element] for element in r.get_elements()])
-
-        # defining needed functions
-        # m1: Matrica = RungeKutta.__m(A=A, B=B, xk=xk, r=r)
-        # m2: Matrica = RungeKutta.__m(A=A, B=B, xk=xk + m1 * T / 2, r=r_T_2)
-        # m3: Matrica = RungeKutta.__m(A=A, B=B, xk=xk + m2 * T / 2, r=r_T_2)
-        # m4: Matrica = RungeKutta.__m(A=A, B=B, xk=xk + m3 * T, r=r_T)
-
         return xk + (
-                RungeKutta.__m1(A=A, B=B, xk=xk, r=r) +
-                RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * 2 +
-                RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * 2 +
-                RungeKutta.__m4(A=A, B=B, xk=xk, r=r, T=T)
+                ~RungeKutta.__m1(A=A, B=B, xk=xk, r=r) +
+                ~RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * 2 +
+                ~RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * 2 +
+                ~RungeKutta.__m4(A=A, B=B, xk=xk, r=r, T=T)
         ) * T / 6
 
     @staticmethod
@@ -537,7 +527,7 @@ class RungeKutta:
         :param r: vector
         :return: calculated point
         """
-        return xk * A if B is None else xk * A + ~(B * ~r)
+        return A * ~xk if B is None else A * ~xk + B * ~r
 
     @staticmethod
     def __m2(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
@@ -551,9 +541,9 @@ class RungeKutta:
         :return: calculated point
         """
         new_r: Matrica = Matrica(elements=[[t + T / 2 for t in elements] for elements in r.get_elements()])
-        x: Matrica = (xk + RungeKutta.__m1(A=A, B=B, xk=xk, r=r) * T / 2) * A
+        x: Matrica = A * ~(xk + ~RungeKutta.__m1(A=A, B=B, xk=xk, r=r) * T / 2)
 
-        return x if B is None else x + ~(B * ~new_r)
+        return x if B is None else x + B * ~new_r
 
     @staticmethod
     def __m3(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
@@ -567,9 +557,9 @@ class RungeKutta:
         :return: calculated point
         """
         new_r: Matrica = Matrica(elements=[[t + T / 2 for t in elements] for elements in r.get_elements()])
-        x: Matrica = (xk + RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * T / 2) * A
+        x: Matrica = A * ~(xk + ~RungeKutta.__m2(A=A, B=B, xk=xk, r=r, T=T) * T / 2)
 
-        return x if B is None else x + ~(B * ~new_r)
+        return x if B is None else x + B * ~new_r
 
     @staticmethod
     def __m4(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica, T: float) -> Matrica:
@@ -583,9 +573,9 @@ class RungeKutta:
         :return: calculated point
         """
         new_r: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
-        x: Matrica = (xk + RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * T) * A
+        x: Matrica = A * ~(xk + ~RungeKutta.__m3(A=A, B=B, xk=xk, r=r, T=T) * T)
 
-        return x if B is None else x + ~(B * ~new_r)
+        return x if B is None else x + B * ~new_r
 
 
 class PECE2:
