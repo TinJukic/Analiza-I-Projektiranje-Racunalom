@@ -506,18 +506,6 @@ class RungeKutta:
         return xk + f_real(x=xk, t=t) * T
 
     @staticmethod
-    def __m(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica) -> Matrica:
-        """
-        M function of the Runge-Kutta.
-        :param A: matrix of the function
-        :param B: matrix of the function (optional)
-        :param xk: current point
-        :param r: vector
-        :return: calculated point
-        """
-        return xk * A if B is None else xk * A + B * r
-
-    @staticmethod
     def __m1(A: Matrica, B: Matrica | None, xk: Matrica, r: Matrica) -> Matrica:
         """
         M1 function of the Runge-Kutta.
@@ -628,7 +616,7 @@ class PECE2:
             if r is not None:
                 r_T: Matrica = Matrica(elements=[[t + T for t in elements] for elements in r.get_elements()])
 
-            # calculating next point using Euler and reversed Euler for two times
+            # calculating next point using Euler and reversed Euler two times
             predicted_x: Matrica = x + PECE2.__predictor(A=A, B=B, x=x, T=T, r=r)
             predicted_x = x + PECE2.__corrector(A=A, B=B, xk=predicted_x, T=T, r=r_T)
             x += PECE2.__corrector(A=A, B=B, xk=predicted_x, T=T, r=r_T)
